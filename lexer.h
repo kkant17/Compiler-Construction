@@ -1,5 +1,5 @@
-#ifndef SEXER_H
-#define SEXER_H
+#ifndef LEXER_H
+#define LEXER_H
 
 #include <stdio.h>
 #include <string.h>
@@ -68,9 +68,7 @@ typedef union lexeme{//from later in the document:
                      //"If the lexeme is an integer or real number, then its value computed by the lexical analyzer should be printed..."
     int ival;
     float rval;
-    char* strlex;
-    //debatable whether we need to store length of lexeme; might need another structure instead of char* in this union for that. 
-    //getToken can just ensure the correct amount of memory (with one extra char for \0 at the end) is allocated to strlex. Unclear if length useful anywhere
+    char strlex[30];
 } lexeme;
 
 typedef struct tokenInfo{//stores lexeme, line number, token type and lexeme's first character's number in line. 
@@ -81,8 +79,12 @@ typedef struct tokenInfo{//stores lexeme, line number, token type and lexeme's f
 } tokenInfo;
 
 typedef struct twinBuffer{
-    char buf1[100];
-    char buf2[100];
+    char buf1[30];
+    char buf2[30];
+    int currbuf;
+    int index;
+    int cno;
+    int lno;
 } twinBuffer;
 
 
