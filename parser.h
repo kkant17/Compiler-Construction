@@ -72,7 +72,7 @@ typedef struct{
 typedef struct {
     int ruleNumber;
     NonTerminal lhs;
-    TokenInner *rhs; // Array of symbols (terminals or non-terminals)
+    Token *rhs; // Array of symbols (terminals or non-terminals)
     int rhsCount;    // Number of symbols on the RHS
 } GrammarRule;
 

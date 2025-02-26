@@ -1,6 +1,8 @@
 #include "parser.h"
 #include <errno.h>
-#define NUMGRAMMAR 54
+#include <ctype.h>
+#include <string.h>
+#define NUMGRAMMAR 95
 #define MAX_LINE_LENGTH 1024
 #define MAX_TERMINALS 56
 // Array to store grammar rules
@@ -11,7 +13,7 @@ int grammarRuleCount = 0;
 FirstFollowSet *firstFollowSets;
 int nonTerminalCount = 0;
 void storeGrammarRules() {
-    FILE *file = fopen("ParsedGrammar.txt", "r");
+    FILE *file = fopen("updated_rules.txt", "r");
     if (!file) {
         fprintf(stderr, "Error opening Parsed Grammar.txt: %s\n", strerror(errno));
         exit(EXIT_FAILURE);
@@ -28,20 +30,194 @@ void storeGrammarRules() {
     int ruleNumber = 0;
 
     while (fgets(line, sizeof(line), file)) {
-        if (strstr(line, "Parsed Grammar:") || strstr(line, "FIRST sets:") || strstr(line, "FOLLOW sets:")) {
-            continue;
+
+        printf("Processing line: %s\n", line);
+        /*char *lhsToken = strtok(line, " ");
+        char *rhsToken = strtok(NULL, " ");
+        printf("LHS: %s, RHS: %s\n", lhsToken, rhsToken);*/
+        char *lhsToken = strtok(line, " ");
+        char *rhsToken = strtok(NULL, "===");
+
+        if (lhsToken) {
+            // Trim leading and trailing spaces from lhsToken
+            while (isspace((unsigned char)*lhsToken)) lhsToken++;
+            char *end = lhsToken + strlen(lhsToken) - 1;
+            while (end > lhsToken && isspace((unsigned char)*end)) end--;
+            *(end + 1) = '\0';
         }
 
-        char *lhsToken = strtok(line, " ");
-        char *rhsToken = strtok(NULL, " ");
+        /*if (rhsToken) {
+            // Trim leading and trailing spaces from rhsToken
+            while (isspace((unsigned char)*rhsToken)) rhsToken++;
+            char *end = rhsToken + strlen(rhsToken) - 1;
+            while (end > rhsToken && isspace((unsigned char)*end)) end--;
+            *(end + 1) = '\0';
+        }*/
+
+        printf("LHS: %s, RHS: %s\n", lhsToken, rhsToken);
 
         if (lhsToken && rhsToken) {
             NonTerminal lhs;
+            printf("lhsToken: %s\n", lhsToken);
             if (strcmp(lhsToken, "<program>") == 0) {
                 lhs = program;
             }
-            // Add more mappings for other non-terminals as needed
-
+            else if (strcmp(lhsToken, "<mainFunction>") == 0) {
+                lhs = mainFunction;
+            }
+            else if (strcmp(lhsToken, "<otherFunctions>") == 0) {
+                lhs = otherFunctions;
+            }
+            else if (strcmp(lhsToken, "<function>") == 0) { 
+                lhs = function;
+            }
+            else if (strcmp(lhsToken, "<input_par>") == 0) {
+                lhs = input_par;
+            }   
+            else if (strcmp(lhsToken, "<output_par>") == 0) {
+                lhs = output_par;
+            }
+            else if (strcmp(lhsToken, "<parameter_list>") == 0) {
+                lhs = parameter_list;
+            }
+            else if (strcmp(lhsToken, "<dataType>") == 0) {
+                lhs = dataType;
+            }
+            else if (strcmp(lhsToken, "<primitiveDatatype>") == 0) {
+                lhs = primitiveDatatype;
+            }
+            else if (strcmp(lhsToken, "<constructedDatatype>") == 0) {
+                lhs = constructedDatatype;
+            }
+            else if (strcmp(lhsToken, "<remaining_list>") == 0) {
+                lhs = remaining_list;
+            }
+            else if (strcmp(lhsToken, "<stmts>") == 0) {
+                lhs = stmts;
+            }
+            else if (strcmp(lhsToken, "<typeDefinitions>") == 0) {
+                lhs = typeDefinitions;
+            }
+            else if (strcmp(lhsToken, "<actualOrRedefined>") == 0) {
+                lhs = actualOrRedefined;
+            }
+            else if (strcmp(lhsToken, "<typeDefinition>") == 0) {
+                lhs = typeDefinition;
+            }
+            else if (strcmp(lhsToken, "<fieldDefinitions>") == 0) {
+                lhs = fieldDefinitions;
+            }
+            else if (strcmp(lhsToken, "<fieldDefinition>") == 0) {
+                lhs = fieldDefinition;
+            }
+            else if (strcmp(lhsToken, "<fieldType>") == 0) {
+                lhs = fieldType;
+            }
+            else if (strcmp(lhsToken, "<moreFields>") == 0) {
+                lhs = moreFields;
+            }
+            else if (strcmp(lhsToken, "<declarations>") == 0) {
+                lhs = declarations;
+            }
+            else if (strcmp(lhsToken, "<declaration>") == 0) {
+                lhs = declaration;
+            }
+            else if (strcmp(lhsToken, "<global_or_not>") == 0) {
+                lhs = global_or_not;
+            }
+            else if (strcmp(lhsToken, "<otherStmts>") == 0) {
+                lhs = otherStmts;
+            }
+            else if (strcmp(lhsToken, "<stmt>") == 0) {
+                lhs = stmt;
+            }
+            else if (strcmp(lhsToken, "<assignmentStmt>") == 0) {
+                lhs = assignmentStmt;
+            }
+            else if (strcmp(lhsToken, "<oneExpansion>") == 0) {
+                lhs = oneExpansion;
+            }
+            else if (strcmp(lhsToken, "<moreExpansions>") == 0) {
+                lhs = moreExpansions;
+            }
+            else if (strcmp(lhsToken, "<singleOrRecId>") == 0) {
+                lhs = singleOrRecId;
+            }
+            else if (strcmp(lhsToken, "<option_single_constructed>") == 0) {
+                lhs = option_single_constructed;
+            }
+            else if (strcmp(lhsToken, "<funCallStmt>") == 0) {
+                lhs = funCallStmt;
+            }
+            else if (strcmp(lhsToken, "<outputParameters>") == 0) {
+                lhs = outputParameters;
+            }
+            else if (strcmp(lhsToken, "<inputParameters>") == 0) {
+                lhs = inputParameters;
+            }
+            else if (strcmp(lhsToken, "<iterativeStmt>") == 0) {
+                lhs = iterativeStmt;
+            }
+            else if (strcmp(lhsToken, "<conditionalStmt>") == 0) {
+                lhs = conditionalStmt;
+            }
+            else if (strcmp(lhsToken, "<elsePart>") == 0) {
+                lhs = elsePart;
+            }
+            else if (strcmp(lhsToken, "<ioStmt>") == 0) {
+                lhs = ioStmt;
+            }
+            else if (strcmp(lhsToken, "<arithmeticExpression>") == 0) {
+                lhs = arithmeticExpression;
+            }
+            else if (strcmp(lhsToken, "<expPrime>") == 0) {
+                lhs = expPrime;
+            }
+            else if (strcmp(lhsToken, "<term>") == 0) {
+                lhs = term;
+            }
+            else if (strcmp(lhsToken, "<termPrime>") == 0) {
+                lhs = termPrime;
+            }
+            else if (strcmp(lhsToken, "<factor>") == 0) {
+                lhs = factor;
+            }
+            else if (strcmp(lhsToken, "<highPrecedenceOperators>") == 0) {
+                lhs = highPrecedenceOperators;
+            }
+            else if (strcmp(lhsToken, "<lowPrecedenceOperators>") == 0) {
+                lhs = lowPrecedenceOperators;
+            }
+            else if (strcmp(lhsToken, "<booleanExpression>") == 0) {
+                lhs = booleanExpression;
+            }
+            else if (strcmp(lhsToken, "<var>") == 0) {
+                lhs = var;
+            }
+            else if (strcmp(lhsToken, "<logicalOp>") == 0) {
+                lhs = logicalOp;
+            }
+            else if (strcmp(lhsToken, "<relationalOp>") == 0) {
+                lhs = relationalOp;
+            }
+            else if (strcmp(lhsToken, "<returnStmt>") == 0) {
+                lhs = returnStmt;
+            }
+            else if (strcmp(lhsToken, "<optionalReturn>") == 0) {
+                lhs = optionalReturn;
+            }
+            else if (strcmp(lhsToken, "<idList>") == 0) {
+                lhs = idList;
+            }
+            else if (strcmp(lhsToken, "<more_ids>") == 0) {
+                lhs = more_ids;
+            }
+            else if (strcmp(lhsToken, "<definetypestmt>") == 0) {   
+                lhs = definetypestmt;
+            }
+            else if (strcmp(lhsToken, "<A>") == 0) {
+                lhs = A;
+            }
             grammarRules[ruleNumber].ruleNumber = ruleNumber;
             grammarRules[ruleNumber].lhs = lhs;
             grammarRules[ruleNumber].rhs = NULL; // Initialize to NULL
@@ -49,20 +225,448 @@ void storeGrammarRules() {
             char *rhs = strtok(rhsToken, " ");
             int rhsCount = 0;
             while (rhs) {
-                TokenInner *newRhs = realloc(grammarRules[ruleNumber].rhs, sizeof(TokenInner) * (rhsCount + 1));
+                printf("rhs: %s\n", rhs);
+                Token *newRhs = realloc(grammarRules[ruleNumber].rhs, sizeof(Token) * (rhsCount + 1));
                 if (!newRhs) {
                     perror("Memory allocation failed for RHS tokens");
-                    free(grammarRules[ruleNumber].rhs); // Free previously allocated memory
+                    free(grammarRules[ruleNumber].rhs);
                     fclose(file);
                     exit(EXIT_FAILURE);
                 }
                 grammarRules[ruleNumber].rhs = newRhs;
 
                 if (strcmp(rhs, "<otherFunctions>") == 0) {
-                    grammarRules[ruleNumber].rhs[rhsCount].n = otherFunctions;
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = otherFunctions;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 0;
                 }
-                // Add more mappings for other tokens as needed
-
+                else if (strcmp(rhs, "<function>") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = function;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 0;
+                }
+                else if (strcmp(rhs, "<input_par>") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = input_par;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 0;
+                }
+                else if (strcmp(rhs, "<output_par>") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = output_par;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 0;
+                }
+                else if (strcmp(rhs, "<parameter_list>") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = parameter_list;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 0;
+                }
+                else if (strcmp(rhs, "<dataType>") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = dataType;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 0;
+                }
+                else if (strcmp(rhs, "<primitiveDatatype>") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = primitiveDatatype;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 0;
+                }
+                else if (strcmp(rhs, "<constructedDatatype>") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = constructedDatatype;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 0;
+                }
+                else if (strcmp(rhs, "<remaining_list>") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = remaining_list;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 0;
+                }
+                else if (strcmp(rhs, "<stmts>") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = stmts;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 0;
+                }
+                else if (strcmp(rhs, "<typeDefinitions>") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = typeDefinitions;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 0;
+                }
+                else if (strcmp(rhs, "<actualOrRedefined>") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = actualOrRedefined;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 0;
+                }
+                else if (strcmp(rhs, "<typeDefinition>") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = typeDefinition;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 0;
+                }
+                else if (strcmp(rhs, "<fieldDefinitions>") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = fieldDefinitions;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 0;
+                }
+                else if (strcmp(rhs, "<fieldDefinition>") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = fieldDefinition;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 0;
+                }
+                else if (strcmp(rhs, "<fieldType>") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = fieldType;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 0;
+                }
+                else if (strcmp(rhs, "<moreFields>") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = moreFields;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 0;
+                }
+                else if (strcmp(rhs, "<declarations>") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = declarations;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 0;
+                }
+                else if (strcmp(rhs, "<declaration>") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = declaration;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 0;
+                }
+                else if (strcmp(rhs, "<global_or_not>") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = global_or_not;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 0;
+                }
+                else if (strcmp(rhs, "<otherStmts>") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = otherStmts;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 0;
+                }
+                else if (strcmp(rhs, "<stmt>") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = stmt;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 0;
+                }
+                else if (strcmp(rhs, "<assignmentStmt>") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = assignmentStmt;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 0;
+                }
+                else if (strcmp(rhs, "<oneExpansion>") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = oneExpansion;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 0;
+                }
+                else if (strcmp(rhs, "<moreExpansions>") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = moreExpansions;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 0;
+                }
+                else if (strcmp(rhs, "<singleOrRecId>") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = singleOrRecId;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 0;
+                }
+                else if (strcmp(rhs, "<option_single_constructed>") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = option_single_constructed;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 0;
+                }
+                else if (strcmp(rhs, "<funCallStmt>") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = funCallStmt;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 0;
+                }
+                else if (strcmp(rhs, "<outputParameters>") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = outputParameters;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 0;
+                }
+                else if (strcmp(rhs, "<inputParameters>") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = inputParameters;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 0;
+                }
+                else if (strcmp(rhs, "<iterativeStmt>") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = iterativeStmt;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 0;
+                }
+                else if (strcmp(rhs, "<conditionalStmt>") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = conditionalStmt;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 0;
+                }
+                else if (strcmp(rhs, "<elsePart>") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = elsePart;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 0;
+                }
+                else if (strcmp(rhs, "<ioStmt>") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = ioStmt;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 0;
+                }
+                else if (strcmp(rhs, "<arithmeticExpression>") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = arithmeticExpression;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 0;
+                }
+                else if (strcmp(rhs, "<expPrime>") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = expPrime;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 0;
+                }
+                else if (strcmp(rhs, "<term>") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = term;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 0;
+                }
+                else if (strcmp(rhs, "<termPrime>") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = termPrime;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 0;
+                }
+                else if (strcmp(rhs, "<factor>") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = factor;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 0;
+                }
+                else if (strcmp(rhs, "<highPrecedenceOperators>") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = highPrecedenceOperators;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 0;
+                }
+                else if (strcmp(rhs, "<lowPrecedenceOperators>") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = lowPrecedenceOperators;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 0;
+                }
+                else if (strcmp(rhs, "<booleanExpression>") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = booleanExpression;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 0;
+                }
+                else if (strcmp(rhs, "<var>") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = var;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 0;
+                }
+                else if (strcmp(rhs, "<logicalOp>") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = logicalOp;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 0;
+                }
+                else if (strcmp(rhs, "<relationalOp>") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = relationalOp;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 0;
+                }
+                else if (strcmp(rhs, "<returnStmt>") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = returnStmt;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 0;
+                }
+                else if (strcmp(rhs, "<optionalReturn>") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = optionalReturn;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 0;
+                }
+                else if (strcmp(rhs, "<idList>") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = idList;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 0;
+                }
+                else if (strcmp(rhs, "<more_ids>") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = more_ids;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 0;
+                }
+                else if (strcmp(rhs, "<definetypestmt>") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = definetypestmt;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 0;
+                }
+                else if (strcmp(rhs, "<A>") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = A;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 0;
+                }
+                else if (strcmp(rhs,"TK_ASSIGNOP") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_ASSIGNOP;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
+                }
+                else if (strcmp(rhs,"TK_FIELDID") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_FIELDID;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
+                }
+                else if (strcmp(rhs,"TK_ID") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_ID;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
+                }
+                else if (strcmp(rhs,"TK_NUM") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_NUM;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
+                }
+                else if (strcmp(rhs,"TK_RNUM") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_RNUM;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
+                }
+                else if (strcmp(rhs,"TK_FUNID") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_FUNID;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
+                }
+                else if (strcmp(rhs,"TK_RUID") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_RUID;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
+                }
+                else if (strcmp(rhs,"TK_WITH") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_WITH;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
+                }
+                else if (strcmp(rhs,"TK_PARAMETERS") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_PARAMETERS;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
+                }
+                else if (strcmp(rhs,"TK_END") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_END;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
+                }
+                else if (strcmp(rhs,"TK_WHILE") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_WHILE;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
+                }
+                else if (strcmp(rhs,"TK_UNION") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_UNION;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
+                }
+                else if (strcmp(rhs,"TK_ENDUNION") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_ENDUNION;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
+                }
+                else if (strcmp(rhs,"TK_DEFINETYPE") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_DEFINETYPE;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
+                }
+                else if (strcmp(rhs,"TK_AS") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_AS;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
+                }
+                else if (strcmp(rhs,"TK_TYPE") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_TYPE;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
+                }
+                else if (strcmp(rhs,"TK_MAIN") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_MAIN;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
+                }
+                else if (strcmp(rhs,"TK_GLOBAL") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_GLOBAL;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
+                }
+                else if (strcmp(rhs,"TK_PARAMETER") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_PARAMETER;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
+                }
+                else if (strcmp(rhs,"TK_LIST") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_LIST;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
+                }
+                else if (strcmp(rhs,"TK_SQL") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_SQL;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
+                }
+                else if (strcmp(rhs,"TK_SQR") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_SQR;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
+                }
+                else if (strcmp(rhs,"TK_INPUT") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_INPUT;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
+                }
+                else if (strcmp(rhs,"TK_OUTPUT") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_OUTPUT;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
+                }
+                else if (strcmp(rhs,"TK_INT") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_INT;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
+                }
+                else if (strcmp(rhs,"TK_REAL") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_REAL;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
+                }
+                else if (strcmp(rhs,"TK_COMMA") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_COMMA;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
+                }
+                else if (strcmp(rhs,"TK_SEM") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_SEM;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
+                }
+                else if (strcmp(rhs,"TK_COLON") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_COLON;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
+                }
+                else if (strcmp(rhs,"TK_DOT") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_DOT;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
+                }
+                else if (strcmp(rhs,"TK_ENDWHILE") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_ENDWHILE;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
+                }
+                else if (strcmp(rhs,"TK_OP") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_OP;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
+                }
+                else if (strcmp(rhs,"TK_CL") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_CL;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
+                }
+                else if (strcmp(rhs,"TK_IF") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_IF;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
+                }
+                else if (strcmp(rhs,"TK_THEN") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_THEN;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
+                }
+                else if (strcmp(rhs,"TK_ENDIF") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_ENDIF;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
+                }
+                else if (strcmp(rhs,"TK_READ") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_READ;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
+                }
+                else if (strcmp(rhs,"TK_WRITE") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_WRITE;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
+                }
+                else if (strcmp(rhs,"TK_RETURN") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_RETURN;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
+                }
+                else if (strcmp(rhs,"TK_PLUS") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_PLUS;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
+                }
+                else if (strcmp(rhs,"TK_MINUS") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_MINUS;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
+                }
+                else if (strcmp(rhs,"TK_MUL") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_MUL;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
+                }
+                else if (strcmp(rhs,"TK_DIV") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_DIV;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
+                }
+                else if (strcmp(rhs,"TK_CALL") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_CALL;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
+                }
+                else if (strcmp(rhs,"TK_RECORD") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_RECORD;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
+                }
+                else if (strcmp(rhs,"TK_ENDRECORD") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_ENDRECORD;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
+                }
+                else if (strcmp(rhs,"TK_ELSE") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_ELSE;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
+                }
+                else if (strcmp(rhs,"TK_AND") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_AND;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
+                }
+                else if (strcmp(rhs,"TK_OR") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_OR;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
+                }
+                else if (strcmp(rhs,"TK_NOT") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_NOT;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
+                }
+                else if (strcmp(rhs,"TK_LT") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_LT;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
+                }
+                else if (strcmp(rhs,"TK_LE") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_LE;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
+                }
+                else if (strcmp(rhs,"TK_EQ") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_EQ;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
+                }
+                else if (strcmp(rhs,"TK_GT") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_GT;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
+                }
+                else if (strcmp(rhs,"TK_GE") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_GE;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
+                }
+                else if (strcmp(rhs,"TK_NE") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_NE;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
+                }
+                else if (strcmp(rhs,"eps") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = eps;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
+                }
                 rhsCount++;
                 rhs = strtok(NULL, " ");
             }
@@ -75,17 +679,25 @@ void storeGrammarRules() {
     grammarRuleCount = ruleNumber;
     fclose(file);
 }
+
+
+
 void printGrammarRules() {
     for (int i = 0; i < grammarRuleCount; i++) {
         printf("Rule %d: ", grammarRules[i].ruleNumber);
         printf("<%d> ===> ", grammarRules[i].lhs); // Replace with actual non-terminal names if needed
 
         for (int j = 0; j < grammarRules[i].rhsCount; j++) {
-            printf("<%d> ", grammarRules[i].rhs[j].n); // Replace with actual token names if needed
+            if (grammarRules[i].rhs[j].isTerminal) {
+                printf("TK_%d ", grammarRules[i].rhs[j].tk.t); // Print terminal token
+            } else {
+                printf("<%d> ", grammarRules[i].rhs[j].tk.n); // Print non-terminal
+            }
         }
         printf("\n");
     }
 }
+
 FirstFollowSet* storeFirstFollowSets() {
     FILE *file = fopen("grammar.txt", "r");
     if (!file) {
@@ -494,7 +1106,7 @@ int main() {
 
     printf("hello testing");
     storeGrammarRules(); // Ensure this function is called to populate the grammarRules
-    //printGrammarRules(); // Call the function to print the rules
+    printGrammarRules(); // Call the function to print the rules
 
     // Free allocated memory here if needed
     return 0;

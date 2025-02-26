@@ -61,7 +61,8 @@ typedef enum {
     TK_EQ,
     TK_GT,
     TK_GE,
-    TK_NE
+    TK_NE,
+    eps
 } tk;
 
 typedef union lexeme{//from later in the document: 
