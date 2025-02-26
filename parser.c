@@ -32,9 +32,7 @@ void storeGrammarRules() {
     while (fgets(line, sizeof(line), file)) {
 
         printf("Processing line: %s\n", line);
-        /*char *lhsToken = strtok(line, " ");
-        char *rhsToken = strtok(NULL, " ");
-        printf("LHS: %s, RHS: %s\n", lhsToken, rhsToken);*/
+
         char *lhsToken = strtok(line, " ");
         char *rhsToken = strtok(NULL, "===");
 
@@ -45,14 +43,6 @@ void storeGrammarRules() {
             while (end > lhsToken && isspace((unsigned char)*end)) end--;
             *(end + 1) = '\0';
         }
-
-        /*if (rhsToken) {
-            // Trim leading and trailing spaces from rhsToken
-            while (isspace((unsigned char)*rhsToken)) rhsToken++;
-            char *end = rhsToken + strlen(rhsToken) - 1;
-            while (end > rhsToken && isspace((unsigned char)*end)) end--;
-            *(end + 1) = '\0';
-        }*/
 
         printf("LHS: %s, RHS: %s\n", lhsToken, rhsToken);
 
@@ -225,6 +215,10 @@ void storeGrammarRules() {
             char *rhs = strtok(rhsToken, " ");
             int rhsCount = 0;
             while (rhs) {
+                size_t len = strlen(rhs);
+                while (len > 0 && (rhs[len - 1] == '\n' || rhs[len - 1] == '\r' || rhs[len - 1] == ' ')) {
+                    rhs[--len] = '\0';
+                }
                 printf("rhs: %s\n", rhs);
                 Token *newRhs = realloc(grammarRules[ruleNumber].rhs, sizeof(Token) * (rhsCount + 1));
                 if (!newRhs) {
@@ -235,7 +229,15 @@ void storeGrammarRules() {
                 }
                 grammarRules[ruleNumber].rhs = newRhs;
 
-                if (strcmp(rhs, "<otherFunctions>") == 0) {
+                if (strcmp(rhs, "<program>") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = program;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 0;
+                }
+                else if (strcmp(rhs, "<mainFunction>") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = mainFunction;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 0;
+                }
+                else if (strcmp(rhs, "<otherFunctions>") == 0) {
                     grammarRules[ruleNumber].rhs[rhsCount].tk.n = otherFunctions;
                     grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 0;
                 }
@@ -440,231 +442,231 @@ void storeGrammarRules() {
                     grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 0;
                 }
                 else if (strcmp(rhs,"TK_ASSIGNOP") == 0) {
-                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_ASSIGNOP;
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.t = TK_ASSIGNOP;
                     grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
                 }
                 else if (strcmp(rhs,"TK_FIELDID") == 0) {
-                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_FIELDID;
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.t = TK_FIELDID;
                     grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
                 }
                 else if (strcmp(rhs,"TK_ID") == 0) {
-                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_ID;
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.t = TK_ID;
                     grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
                 }
                 else if (strcmp(rhs,"TK_NUM") == 0) {
-                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_NUM;
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.t = TK_NUM;
                     grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
                 }
                 else if (strcmp(rhs,"TK_RNUM") == 0) {
-                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_RNUM;
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.t = TK_RNUM;
                     grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
                 }
                 else if (strcmp(rhs,"TK_FUNID") == 0) {
-                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_FUNID;
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.t = TK_FUNID;
                     grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
                 }
                 else if (strcmp(rhs,"TK_RUID") == 0) {
-                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_RUID;
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.t = TK_RUID;
                     grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
                 }
                 else if (strcmp(rhs,"TK_WITH") == 0) {
-                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_WITH;
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.t = TK_WITH;
                     grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
                 }
                 else if (strcmp(rhs,"TK_PARAMETERS") == 0) {
-                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_PARAMETERS;
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.t = TK_PARAMETERS;
                     grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
                 }
                 else if (strcmp(rhs,"TK_END") == 0) {
-                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_END;
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.t = TK_END;
                     grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
                 }
                 else if (strcmp(rhs,"TK_WHILE") == 0) {
-                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_WHILE;
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.t = TK_WHILE;
                     grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
                 }
                 else if (strcmp(rhs,"TK_UNION") == 0) {
-                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_UNION;
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.t = TK_UNION;
                     grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
                 }
                 else if (strcmp(rhs,"TK_ENDUNION") == 0) {
-                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_ENDUNION;
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.t = TK_ENDUNION;
                     grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
                 }
                 else if (strcmp(rhs,"TK_DEFINETYPE") == 0) {
-                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_DEFINETYPE;
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.t = TK_DEFINETYPE;
                     grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
                 }
                 else if (strcmp(rhs,"TK_AS") == 0) {
-                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_AS;
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.t = TK_AS;
                     grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
                 }
                 else if (strcmp(rhs,"TK_TYPE") == 0) {
-                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_TYPE;
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.t = TK_TYPE;
                     grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
                 }
                 else if (strcmp(rhs,"TK_MAIN") == 0) {
-                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_MAIN;
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.t = TK_MAIN;
                     grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
                 }
                 else if (strcmp(rhs,"TK_GLOBAL") == 0) {
-                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_GLOBAL;
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.t = TK_GLOBAL;
                     grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
                 }
                 else if (strcmp(rhs,"TK_PARAMETER") == 0) {
-                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_PARAMETER;
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.t = TK_PARAMETER;
                     grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
                 }
                 else if (strcmp(rhs,"TK_LIST") == 0) {
-                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_LIST;
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.t = TK_LIST;
                     grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
                 }
                 else if (strcmp(rhs,"TK_SQL") == 0) {
-                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_SQL;
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.t = TK_SQL;
                     grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
                 }
                 else if (strcmp(rhs,"TK_SQR") == 0) {
-                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_SQR;
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.t = TK_SQR;
                     grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
                 }
                 else if (strcmp(rhs,"TK_INPUT") == 0) {
-                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_INPUT;
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.t = TK_INPUT;
                     grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
                 }
                 else if (strcmp(rhs,"TK_OUTPUT") == 0) {
-                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_OUTPUT;
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.t = TK_OUTPUT;
                     grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
                 }
                 else if (strcmp(rhs,"TK_INT") == 0) {
-                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_INT;
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.t = TK_INT;
                     grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
                 }
                 else if (strcmp(rhs,"TK_REAL") == 0) {
-                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_REAL;
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.t = TK_REAL;
                     grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
                 }
                 else if (strcmp(rhs,"TK_COMMA") == 0) {
-                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_COMMA;
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.t = TK_COMMA;
                     grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
                 }
                 else if (strcmp(rhs,"TK_SEM") == 0) {
-                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_SEM;
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.t = TK_SEM;
                     grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
                 }
                 else if (strcmp(rhs,"TK_COLON") == 0) {
-                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_COLON;
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.t = TK_COLON;
                     grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
                 }
                 else if (strcmp(rhs,"TK_DOT") == 0) {
-                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_DOT;
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.t = TK_DOT;
                     grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
                 }
                 else if (strcmp(rhs,"TK_ENDWHILE") == 0) {
-                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_ENDWHILE;
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.t = TK_ENDWHILE;
                     grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
                 }
                 else if (strcmp(rhs,"TK_OP") == 0) {
-                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_OP;
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.t = TK_OP;
                     grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
                 }
                 else if (strcmp(rhs,"TK_CL") == 0) {
-                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_CL;
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.t = TK_CL;
                     grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
                 }
                 else if (strcmp(rhs,"TK_IF") == 0) {
-                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_IF;
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.t = TK_IF;
                     grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
                 }
                 else if (strcmp(rhs,"TK_THEN") == 0) {
-                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_THEN;
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.t = TK_THEN;
                     grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
                 }
                 else if (strcmp(rhs,"TK_ENDIF") == 0) {
-                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_ENDIF;
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.t = TK_ENDIF;
                     grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
                 }
                 else if (strcmp(rhs,"TK_READ") == 0) {
-                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_READ;
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.t = TK_READ;
                     grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
                 }
                 else if (strcmp(rhs,"TK_WRITE") == 0) {
-                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_WRITE;
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.t = TK_WRITE;
                     grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
                 }
                 else if (strcmp(rhs,"TK_RETURN") == 0) {
-                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_RETURN;
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.t = TK_RETURN;
                     grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
                 }
                 else if (strcmp(rhs,"TK_PLUS") == 0) {
-                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_PLUS;
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.t = TK_PLUS;
                     grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
                 }
                 else if (strcmp(rhs,"TK_MINUS") == 0) {
-                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_MINUS;
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.t = TK_MINUS;
                     grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
                 }
                 else if (strcmp(rhs,"TK_MUL") == 0) {
-                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_MUL;
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.t = TK_MUL;
                     grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
                 }
                 else if (strcmp(rhs,"TK_DIV") == 0) {
-                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_DIV;
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.t = TK_DIV;
                     grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
                 }
                 else if (strcmp(rhs,"TK_CALL") == 0) {
-                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_CALL;
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.t = TK_CALL;
                     grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
                 }
                 else if (strcmp(rhs,"TK_RECORD") == 0) {
-                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_RECORD;
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.t = TK_RECORD;
                     grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
                 }
                 else if (strcmp(rhs,"TK_ENDRECORD") == 0) {
-                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_ENDRECORD;
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.t = TK_ENDRECORD;
                     grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
                 }
                 else if (strcmp(rhs,"TK_ELSE") == 0) {
-                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_ELSE;
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.t = TK_ELSE;
                     grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
                 }
                 else if (strcmp(rhs,"TK_AND") == 0) {
-                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_AND;
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.t = TK_AND;
                     grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
                 }
                 else if (strcmp(rhs,"TK_OR") == 0) {
-                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_OR;
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.t = TK_OR;
                     grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
                 }
                 else if (strcmp(rhs,"TK_NOT") == 0) {
-                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_NOT;
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.t = TK_NOT;
                     grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
                 }
                 else if (strcmp(rhs,"TK_LT") == 0) {
-                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_LT;
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.t = TK_LT;
                     grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
                 }
                 else if (strcmp(rhs,"TK_LE") == 0) {
-                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_LE;
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.t = TK_LE;
                     grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
                 }
                 else if (strcmp(rhs,"TK_EQ") == 0) {
-                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_EQ;
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.t = TK_EQ;
                     grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
                 }
                 else if (strcmp(rhs,"TK_GT") == 0) {
-                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_GT;
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.t = TK_GT;
                     grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
                 }
                 else if (strcmp(rhs,"TK_GE") == 0) {
-                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_GE;
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.t = TK_GE;
                     grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
                 }
                 else if (strcmp(rhs,"TK_NE") == 0) {
-                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = TK_NE;
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.t = TK_NE;
                     grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
                 }
                 else if (strcmp(rhs,"eps") == 0) {
-                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = eps;
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.t = eps;
                     grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
                 }
                 rhsCount++;
