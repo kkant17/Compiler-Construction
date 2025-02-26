@@ -1,0 +1,164 @@
+Parsed Grammar:
+<program> ===> <otherFunctions> <mainFunction>
+<mainFunction> ===> TK_MAIN <stmts> TK_END
+<otherFunctions> ===> <function> <otherFunctions> | eps
+<function> ===> TK_FUNID <input_par> <output_par> TK_SEM <stmts> TK_END
+<input_par> ===> TK_INPUT TK_PARAMETER TK_LIST TK_SQL <parameter_list> TK_SQR
+<output_par> ===> TK_OUTPUT TK_PARAMETER TK_LIST TK_SQL <parameter_list> TK_SQR | eps
+<parameter_list> ===> <dataType> TK_ID <remaining_list>
+<dataType> ===> <primitiveDatatype> | <constructedDatatype>
+<primitiveDatatype> ===> TK_INT | TK_REAL
+<constructedDatatype> ===> TK_RECORD TK_RUID | TK_UNION TK_RUID | TK_RUID
+<remaining_list> ===> TK_COMMA <parameter_list> | eps
+<stmts> ===> <typeDefinitions> <declarations> <otherStmts> <returnStmt>
+<typeDefinitions> ===> <actualOrRedefined> <typeDefinitions> | eps
+<actualOrRedefined> ===> <typeDefinition> | <definetypestmt>
+<typeDefinition> ===> TK_RECORD TK_RUID <fieldDefinitions> TK_ENDRECORD | TK_UNION TK_RUID <fieldDefinitions> TK_ENDUNION
+<fieldDefinitions> ===> <fieldDefinition> <fieldDefinition> <moreFields>
+<fieldDefinition> ===> TK_TYPE <fieldType> TK_COLON TK_FIELDID TK_SEM
+<fieldType> ===> <primitiveDatatype> | <constructedDatatype>
+<moreFields> ===> <fieldDefinition> <moreFields> | eps
+<declarations> ===> <declaration> <declarations> | eps
+<declaration> ===> TK_TYPE <dataType> TK_COLON TK_ID <global_or_not> TK_SEM
+<global_or_not> ===> TK_COLON TK_GLOBAL | eps
+<otherStmts> ===> <stmt> <otherStmts> | eps
+<stmt> ===> <assignmentStmt> | <iterativeStmt> | <conditionalStmt> | <ioStmt> | <funCallStmt>
+<assignmentStmt> ===> <singleOrRecId> TK_ASSIGNOP <arithmeticExpression> TK_SEM
+<oneExpansion> ===> TK_DOT TK_FIELDID
+<moreExpansions> ===> <oneExpansion> <moreExpansions> | eps
+<singleOrRecId> ===> TK_ID <option_single_constructed>
+<option_single_constructed> ===> <oneExpansion> <moreExpansions> | eps
+<funCallStmt> ===> <outputParameters> TK_CALL TK_FUNID TK_WITH TK_PARAMETERS <inputParameters> TK_SEM
+<outputParameters> ===> TK_SQL <idList> TK_SQR TK_ASSIGNOP | eps
+<inputParameters> ===> TK_SQL <idList> TK_SQR
+<iterativeStmt> ===> TK_WHILE TK_OP <booleanExpression> TK_CL <stmt> <otherStmts> TK_ENDWHILE
+<conditionalStmt> ===> TK_IF TK_OP <booleanExpression> TK_CL TK_THEN <stmt> <otherStmts> <elsePart>
+<elsePart> ===> TK_ELSE <stmt> <otherStmts> TK_ENDIF | TK_ENDIF
+<ioStmt> ===> TK_READ TK_OP <var> TK_CL TK_SEM | TK_WRITE TK_OP <var> TK_CL TK_SEM
+<arithmeticExpression> ===> <term> <expPrime>
+<expPrime> ===> <lowPrecedenceOperators> <term> <expPrime> | eps
+<term> ===> <factor> <termPrime>
+<termPrime> ===> <highPrecedenceOperators> <factor> <termPrime> | eps
+<factor> ===> TK_OP <arithmeticExpression> TK_CL | <var>
+<highPrecedenceOperators> ===> TK_MUL | TK_DIV
+<lowPrecedenceOperators> ===> TK_PLUS | TK_MINUS
+<booleanExpression> ===> TK_OP <booleanExpression> TK_CL <logicalOp> TK_OP <booleanExpression> TK_CL | <var> <relationalOp> <var> | TK_NOT TK_OP <booleanExpression> TK_CL
+<var> ===> <singleOrRecId> | TK_NUM | TK_RNUM
+<logicalOp> ===> TK_AND | TK_OR
+<relationalOp> ===> TK_LT | TK_LE | TK_EQ | TK_GT | TK_GE | TK_NE
+<returnStmt> ===> TK_RETURN <optionalReturn> TK_SEM
+<optionalReturn> ===> TK_SQL <idList> TK_SQR | eps
+<idList> ===> TK_ID <more_ids>
+<more_ids> ===> TK_COMMA <idList> | eps
+<definetypestmt> ===> TK_DEFINETYPE <A> TK_RUID TK_AS TK_RUID
+<A> ===> TK_RECORD | TK_UNION
+
+FIRST sets:
+<program>: {'TK_FUNID', 'TK_MAIN'}
+<mainFunction>: {'TK_MAIN'}
+<otherFunctions>: {'TK_FUNID', 'eps'}
+<function>: {'TK_FUNID'}
+<input_par>: {'TK_INPUT'}
+<output_par>: {'eps', 'TK_OUTPUT'}
+<parameter_list>: {'TK_INT', 'TK_REAL', 'TK_UNION', 'TK_RUID', 'TK_RECORD'}
+<dataType>: {'TK_INT', 'TK_REAL', 'TK_UNION', 'TK_RUID', 'TK_RECORD'}
+<primitiveDatatype>: {'TK_INT', 'TK_REAL'}
+<constructedDatatype>: {'TK_UNION', 'TK_RUID', 'TK_RECORD'}
+<remaining_list>: {'eps', 'TK_COMMA'}
+<stmts>: {'TK_WRITE', 'TK_DEFINETYPE', 'TK_SQL', 'TK_WHILE', 'TK_UNION', 'TK_IF', 'TK_RECORD', 'TK_READ', 'TK_CALL', 'TK_TYPE', 'TK_RETURN', 'TK_ID'}
+<typeDefinitions>: {'TK_UNION', 'eps', 'TK_RECORD', 'TK_DEFINETYPE'}
+<actualOrRedefined>: {'TK_UNION', 'TK_RECORD', 'TK_DEFINETYPE'}
+<typeDefinition>: {'TK_UNION', 'TK_RECORD'}
+<fieldDefinitions>: {'TK_TYPE'}
+<fieldDefinition>: {'TK_TYPE'}
+<fieldType>: {'TK_INT', 'TK_REAL', 'TK_UNION', 'TK_RUID', 'TK_RECORD'}
+<moreFields>: {'TK_TYPE', 'eps'}
+<declarations>: {'TK_TYPE', 'eps'}
+<declaration>: {'TK_TYPE'}
+<global_or_not>: {'TK_COLON', 'eps'}
+<otherStmts>: {'TK_WRITE', 'TK_SQL', 'TK_WHILE', 'eps', 'TK_IF', 'TK_READ', 'TK_CALL', 'TK_ID'}
+<stmt>: {'TK_WRITE', 'TK_SQL', 'TK_WHILE', 'TK_IF', 'TK_READ', 'TK_CALL', 'TK_ID'}
+<assignmentStmt>: {'TK_ID'}
+<oneExpansion>: {'TK_DOT'}
+<moreExpansions>: {'TK_DOT', 'eps'}
+<singleOrRecId>: {'TK_ID'}
+<option_single_constructed>: {'TK_DOT', 'eps'}
+<funCallStmt>: {'TK_SQL', 'TK_CALL'}
+<outputParameters>: {'eps', 'TK_SQL'}
+<inputParameters>: {'TK_SQL'}
+<iterativeStmt>: {'TK_WHILE'}
+<conditionalStmt>: {'TK_IF'}
+<elsePart>: {'TK_ELSE', 'TK_ENDIF'}
+<ioStmt>: {'TK_WRITE', 'TK_READ'}
+<arithmeticExpression>: {'TK_ID', 'TK_RNUM', 'TK_NUM', 'TK_OP'}
+<expPrime>: {'TK_PLUS', 'eps', 'TK_MINUS'}
+<term>: {'TK_ID', 'TK_RNUM', 'TK_NUM', 'TK_OP'}
+<termPrime>: {'TK_DIV', 'eps', 'TK_MUL'}
+<factor>: {'TK_ID', 'TK_RNUM', 'TK_NUM', 'TK_OP'}
+<highPrecedenceOperators>: {'TK_DIV', 'TK_MUL'}
+<lowPrecedenceOperators>: {'TK_PLUS', 'TK_MINUS'}
+<booleanExpression>: {'TK_RNUM', 'TK_OP', 'TK_NOT', 'TK_NUM', 'TK_ID'}
+<var>: {'TK_RNUM', 'TK_NUM', 'TK_ID'}
+<logicalOp>: {'TK_AND', 'TK_OR'}
+<relationalOp>: {'TK_GT', 'TK_GE', 'TK_NE', 'TK_EQ', 'TK_LT', 'TK_LE'}
+<returnStmt>: {'TK_RETURN'}
+<optionalReturn>: {'eps', 'TK_SQL'}
+<idList>: {'TK_ID'}
+<more_ids>: {'eps', 'TK_COMMA'}
+<definetypestmt>: {'TK_DEFINETYPE'}
+<A>: {'TK_UNION', 'TK_RECORD'}
+
+FOLLOW sets:
+<program>: {'$'}
+<mainFunction>: {'$'}
+<otherFunctions>: {'TK_MAIN'}
+<function>: {'TK_FUNID', 'TK_MAIN'}
+<input_par>: {'TK_SEM', 'TK_OUTPUT'}
+<output_par>: {'TK_SEM'}
+<parameter_list>: {'TK_SQR'}
+<dataType>: {'TK_COLON', 'TK_ID'}
+<primitiveDatatype>: {'TK_COLON', 'TK_ID'}
+<constructedDatatype>: {'TK_COLON', 'TK_ID'}
+<remaining_list>: {'TK_SQR'}
+<stmts>: {'TK_END'}
+<typeDefinitions>: {'TK_WRITE', 'TK_SQL', 'TK_WHILE', 'TK_IF', 'TK_READ', 'TK_CALL', 'TK_TYPE', 'TK_RETURN', 'TK_ID'}
+<actualOrRedefined>: {'TK_WRITE', 'TK_DEFINETYPE', 'TK_SQL', 'TK_WHILE', 'TK_UNION', 'TK_IF', 'TK_RECORD', 'TK_READ', 'TK_CALL', 'TK_TYPE', 'TK_RETURN', 'TK_ID'}
+<typeDefinition>: {'TK_WRITE', 'TK_DEFINETYPE', 'TK_SQL', 'TK_WHILE', 'TK_UNION', 'TK_IF', 'TK_RECORD', 'TK_READ', 'TK_CALL', 'TK_TYPE', 'TK_RETURN', 'TK_ID'}
+<fieldDefinitions>: {'TK_ENDUNION', 'TK_ENDRECORD'}
+<fieldDefinition>: {'TK_TYPE', 'TK_ENDUNION', 'TK_ENDRECORD'}
+<fieldType>: {'TK_COLON'}
+<moreFields>: {'TK_ENDUNION', 'TK_ENDRECORD'}
+<declarations>: {'TK_WRITE', 'TK_SQL', 'TK_WHILE', 'TK_IF', 'TK_READ', 'TK_CALL', 'TK_RETURN', 'TK_ID'}       
+<declaration>: {'TK_WRITE', 'TK_SQL', 'TK_WHILE', 'TK_IF', 'TK_READ', 'TK_CALL', 'TK_TYPE', 'TK_RETURN', 'TK_ID'}
+<global_or_not>: {'TK_SEM'}
+<otherStmts>: {'TK_ENDWHILE', 'TK_RETURN', 'TK_ELSE', 'TK_ENDIF'}
+<stmt>: {'TK_WRITE', 'TK_SQL', 'TK_WHILE', 'TK_ELSE', 'TK_ENDWHILE', 'TK_IF', 'TK_READ', 'TK_CALL', 'TK_RETURN', 'TK_ID', 'TK_ENDIF'}
+<assignmentStmt>: {'TK_WRITE', 'TK_SQL', 'TK_WHILE', 'TK_ELSE', 'TK_ENDWHILE', 'TK_IF', 'TK_READ', 'TK_CALL', 'TK_RETURN', 'TK_ID', 'TK_ENDIF'}
+<oneExpansion>: {'TK_GT', 'TK_MUL', 'TK_GE', 'TK_SEM', 'TK_NE', 'TK_DIV', 'TK_EQ', 'TK_DOT', 'TK_LT', 'TK_ASSIGNOP', 'TK_CL', 'TK_PLUS', 'TK_LE', 'TK_MINUS'}
+<moreExpansions>: {'TK_GT', 'TK_MUL', 'TK_GE', 'TK_SEM', 'TK_NE', 'TK_DIV', 'TK_EQ', 'TK_LT', 'TK_ASSIGNOP', 'TK_CL', 'TK_PLUS', 'TK_LE', 'TK_MINUS'}
+<singleOrRecId>: {'TK_GT', 'TK_MUL', 'TK_GE', 'TK_SEM', 'TK_NE', 'TK_DIV', 'TK_EQ', 'TK_LT', 'TK_ASSIGNOP', 'TK_CL', 'TK_PLUS', 'TK_LE', 'TK_MINUS'}
+<option_single_constructed>: {'TK_GT', 'TK_MUL', 'TK_GE', 'TK_SEM', 'TK_NE', 'TK_DIV', 'TK_EQ', 'TK_LT', 'TK_ASSIGNOP', 'TK_CL', 'TK_PLUS', 'TK_LE', 'TK_MINUS'}
+<funCallStmt>: {'TK_WRITE', 'TK_SQL', 'TK_WHILE', 'TK_ELSE', 'TK_ENDWHILE', 'TK_IF', 'TK_READ', 'TK_CALL', 'TK_RETURN', 'TK_ID', 'TK_ENDIF'}
+<outputParameters>: {'TK_CALL'}
+<inputParameters>: {'TK_SEM'}
+<iterativeStmt>: {'TK_WRITE', 'TK_SQL', 'TK_WHILE', 'TK_ELSE', 'TK_ENDWHILE', 'TK_IF', 'TK_READ', 'TK_CALL', 'TK_RETURN', 'TK_ID', 'TK_ENDIF'}
+<conditionalStmt>: {'TK_WRITE', 'TK_SQL', 'TK_WHILE', 'TK_ELSE', 'TK_ENDWHILE', 'TK_IF', 'TK_READ', 'TK_CALL', 'TK_RETURN', 'TK_ID', 'TK_ENDIF'}
+<elsePart>: {'TK_WRITE', 'TK_SQL', 'TK_WHILE', 'TK_ELSE', 'TK_ENDWHILE', 'TK_IF', 'TK_READ', 'TK_CALL', 'TK_RETURN', 'TK_ID', 'TK_ENDIF'}
+<ioStmt>: {'TK_WRITE', 'TK_SQL', 'TK_WHILE', 'TK_ELSE', 'TK_ENDWHILE', 'TK_IF', 'TK_READ', 'TK_CALL', 'TK_RETURN', 'TK_ID', 'TK_ENDIF'}
+<arithmeticExpression>: {'TK_CL', 'TK_SEM'}
+<expPrime>: {'TK_CL', 'TK_SEM'}
+<term>: {'TK_CL', 'TK_PLUS', 'TK_SEM', 'TK_MINUS'}
+<termPrime>: {'TK_CL', 'TK_PLUS', 'TK_SEM', 'TK_MINUS'}
+<factor>: {'TK_MUL', 'TK_SEM', 'TK_DIV', 'TK_CL', 'TK_PLUS', 'TK_MINUS'}
+<highPrecedenceOperators>: {'TK_RNUM', 'TK_OP', 'TK_ID', 'TK_NUM'}
+<lowPrecedenceOperators>: {'TK_RNUM', 'TK_OP', 'TK_ID', 'TK_NUM'}
+<booleanExpression>: {'TK_CL'}
+<var>: {'TK_GT', 'TK_MUL', 'TK_GE', 'TK_SEM', 'TK_NE', 'TK_DIV', 'TK_EQ', 'TK_LT', 'TK_CL', 'TK_PLUS', 'TK_LE', 'TK_MINUS'}
+<logicalOp>: {'TK_OP'}
+<relationalOp>: {'TK_RNUM', 'TK_NUM', 'TK_ID'}
+<returnStmt>: {'TK_END'}
+<optionalReturn>: {'TK_SEM'}
+<idList>: {'TK_SQR'}
+<more_ids>: {'TK_SQR'}
+<definetypestmt>: {'TK_WRITE', 'TK_DEFINETYPE', 'TK_SQL', 'TK_WHILE', 'TK_UNION', 'TK_IF', 'TK_RECORD', 'TK_READ', 'TK_CALL', 'TK_TYPE', 'TK_RETURN', 'TK_ID'}
+<A>: {'TK_RUID'}
