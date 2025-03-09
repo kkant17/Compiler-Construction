@@ -86,5 +86,5 @@ typedef struct {
 
 // Function prototypes
 void storeGrammarRules();
-FirstFollowSet* storeFirstFollowSets();
+FirstFollowSet* computeFirstFollowSets();
 #endif
