@@ -59,6 +59,7 @@ typedef enum {
     definetypestmt,
     A
 } NonTerminal;
+
 typedef union{
     NonTerminal n;
     tk t;
@@ -72,7 +73,7 @@ typedef struct{
 typedef struct {
     int ruleNumber;
     NonTerminal lhs;
-    TokenInner *rhs; // Array of symbols (terminals or non-terminals)
+    Token *rhs; // Array of symbols (terminals or non-terminals)
     int rhsCount;    // Number of symbols on the RHS
 } GrammarRule;
 
@@ -84,7 +85,16 @@ typedef struct {
     int followCount; // Number of terminals in the FOLLOW set
 } FirstFollowSet;
 
+// Define a structure for storing the parse table cells
+typedef struct{
+    GrammarRule* rule;
+    NonTerminal nt;
+    tk t;
+}ParseTableCell;
+
 // Function prototypes
 void storeGrammarRules();
 FirstFollowSet* storeFirstFollowSets();
+FirstFollowSet* ComputeFirstFollowSets()
+void createParseTable(FirstFollowSet* F, ParseTableCell* T)
 #endif
