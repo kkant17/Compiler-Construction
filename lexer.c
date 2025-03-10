@@ -48,85 +48,6 @@ FILE *getStream(twinBuffer* buffer, FILE *fp) {//populates twin buffer(a global 
     return fp;
 }
 
-tokenInfo getNextToken(twinBuffer* B, FILE* fp){
-    tokenInfo token;
-    lexeme lex;
-    int state=0;
-    char currchar;
-    int startptr=B->index;
-    while (1){
-        if(B->index==0){
-            fp=getStream(B,fp);
-        }
-        currchar=(B->currbuf)?B->buf1[B->index]:B->buf2[B->index];
-
-        if((currchar<=9)||((currchar>=11)&&(currchar<=31))||currchar==34||currchar==27||currchar==63||currchar==92||currchar==94||currchar==96||((currchar>=123)&&(currchar<=125))||currchar>125)
-            {fprintf(stderr,"Unknown character %c at line %d",currchar,B->lno); B->index++; startptr++; continue;}
-
-
-//0-9,11-31,34,27,63,92,94,96,123-125
-        switch (state){
-            case 0: 
-                startptr=B->index;
-                if((48<=currchar)&&(57>=currchar)){state=1;break;}
-                if(currchar=='!'){state=16;break;}
-                if(currchar=='.'){state=47;break;}
-                if(currchar==';'){state=46;break;}
-                if(currchar=='('){state=44;break;}
-                if(currchar==')'){state=45;break;}
-                if(currchar=='['){state=42;break;}
-                if(currchar==']'){state=43;break;}
-                if(currchar=='/'){state=41;break;}
-                if(currchar=='*'){state=40;break;}
-                if(currchar=='-'){state=39;break;}
-                if(currchar=='+'){state=38;break;}
-                if(currchar==':'){state=48;break;}
-                if(currchar==','){state=49;break;}
-                if(currchar=='~'){state=29;break;}
-                if(currchar=='@'){state=30;break;}
-                if(currchar=='&'){state=34;break;}
-                if(currchar=='~'){state=29;break;}
-                if(currchar=='<'){state=21;break;}
-                if(currchar=='>'){state=18;break;}
-                if(currchar=='_'){state=53;break;}
-                if(currchar==' '){state=69;break;}
-                if(currchar=='\0'){state=74;break;}
-                if(currchar=='%'){state=71;break;}
-                if(currchar=='\n'){state=76;break;}
-                if((currchar<=100)&&(currchar>=98)){state=58;break;}
-                if((currchar<=122)&&(currchar>=101)){state=56;break;}
-                if(currchar=='a'){state=56;break;}
-                if(currchar=='#'){state=50;break;}
-                state=75;
-                break;
-            case 1:
-                if((48<=currchar)&&(57>=currchar)){state=1;break;}
-                if(currchar=='.'){state=3;break;}
-                state=2;
-                break;
-
-            //case 2:
-                
-        }
-        
-        B->index=(B->index+1)%30; 
-    }
-}
-
-
-//final state action order- 
-//1) retract (reduce B->index, changing currbuf and B->index as needed if the new value is negative)
-//2) set parameters of token to return (by calling real_token, int_token, lookup and insert or set_lexeme) / print error
-//3) set both pointers= (B->index+1)%30 (change currbuf if necessary) if returning token
-//4) inc line number if applicable
-//5) return token/set state to 0
-
-//The setting of the forward and start pointer to the required value is taken care of automatically by the increment at the end of the loop and the setting
-//of startpointer=B->index in state 0, in the case where we go to state 0 instead of returning token. Otherwise, it must be done before the return statement.                                                         
-
-//installing token/looking up a token in the symbol table could be handled by the invoking parser function. 
-//it should know to do this since insertion/lookup is needed if and only if an identifier token is returned.
-//Or we could make a symbol table structure here, initialize it in the parser function and pass it into getNextToken().
 
 void retract(twinBuffer*B){
     if(B->index==0){
@@ -346,6 +267,112 @@ tokenInfo float_token(twinBuffer* B, int startptr){
     return token;
 }
 
+
+
+
+tokenInfo getNextToken(twinBuffer* B, FILE* fp){
+    tokenInfo token;
+    lexeme lex;
+    int state=0;
+    char currchar;
+    int startptr=B->index;
+    while (1){
+        if(B->index==0){
+            fp=getStream(B,fp);
+        }
+        currchar=(B->currbuf)?B->buf2[B->index]:B->buf1[B->index];
+
+        if((currchar<=9)||((currchar>=11)&&(currchar<=31))||currchar==34||currchar==27||currchar==63||currchar==92||currchar==94||currchar==96||((currchar>=123)&&(currchar<=125))||currchar>125)
+            {fprintf(stderr,"Unknown character %c at line %d",currchar,B->lno); B->index++; startptr++; continue;}
+
+
+//0-9,11-31,34,27,63,92,94,96,123-125
+        switch (state){
+            case 0: 
+                printf("In state 0");
+                printf("B->index is %d\n",B->index);
+                printf("currchar is %c\n\n",currchar);
+                startptr=B->index;
+                if((48<=currchar)&&(57>=currchar)){state=1;break;}
+                if(currchar=='!'){state=16;break;}
+                if(currchar=='.'){state=47;break;}
+                if(currchar==';'){state=46;break;}
+                if(currchar=='('){state=44;break;}
+                if(currchar==')'){state=45;break;}
+                if(currchar=='['){state=42;break;}
+                if(currchar==']'){state=43;break;}
+                if(currchar=='/'){state=41;break;}
+                if(currchar=='*'){state=40;break;}
+                if(currchar=='-'){state=39;break;}
+                if(currchar=='+'){state=38;break;}
+                if(currchar==':'){state=48;break;}
+                if(currchar==','){state=49;break;}
+                if(currchar=='~'){state=29;break;}
+                if(currchar=='@'){state=30;break;}
+                if(currchar=='&'){state=34;break;}
+                if(currchar=='~'){state=29;break;}
+                if(currchar=='<'){state=21;break;}
+                if(currchar=='>'){state=18;break;}
+                if(currchar=='_'){state=53;break;}
+                if(currchar==' '){state=69;break;}
+                if(currchar=='\0'){state=74;break;}
+                if(currchar=='%'){state=71;break;}
+                if(currchar=='\n'){state=76;break;}
+                if((currchar<=100)&&(currchar>=98)){state=58;break;}
+                if((currchar<=122)&&(currchar>=101)){state=56;break;}
+                if(currchar=='a'){state=56;break;}
+                if(currchar=='#'){state=50;break;}
+                state=75;
+                break;
+            case 1:
+                printf("In state 1");
+                printf("B->index is %d\n",B->index);
+                printf("currchar is %c\n\n",currchar);
+                if((48<=currchar)&&(57>=currchar)){state=1;break;}
+                if(currchar=='.'){state=3;break;}
+                state=2;
+                break;
+            case 2:
+                printf("In state 2");
+                printf("B->index is %d before retract\n",B->index);
+                retract(B);
+                retract(B);
+                printf("startptr is %d and B->index is %d\n",startptr,B->index);
+                token=int_token(B,startptr);
+                B->index=(B->index+1)%30;
+                B->currbuf=(B->index)?B->currbuf:(B->currbuf+1)%2;
+                return token;
+            case 3:
+                if((48<=currchar)&&(57>=currchar)){state=4;break;}
+                state=13;
+                break;
+            case 4:
+                if((48<=currchar)&&(57>=currchar)){state=5;break;}
+                state=14;
+                break;
+
+        }
+        
+        B->index=(B->index+1)%30; 
+    }
+}
+
+
+//final state action order- 
+//1) retract (reduce B->index, changing currbuf and B->index as needed if the new value is negative)
+//2) set parameters of token to return (by calling real_token, int_token, lookup and insert or set_lexeme) / print error
+//3) set both pointers= (B->index+1)%30 (change currbuf if necessary) if returning token (setting startptr=B->index actually not needed; next call to getNextToken will do this for us anyway
+//4) inc line number if applicable
+//5) return token/set state to 0
+
+//The setting of the forward and start pointer to the required value is taken care of automatically by the increment at the end of the loop and the setting
+//of startpointer=B->index in state 0, in the case where we go to state 0 instead of returning token. Otherwise, it must be done before the return statement.                                                         
+
+//installing token/looking up a token in the symbol table could be handled by the invoking parser function. 
+//it should know to do this since insertion/lookup is needed if and only if an identifier token is returned.
+//Or we could make a symbol table structure here, initialize it in the parser function and pass it into getNextToken().
+
+
 /*tokenInfo lookup(){
     tokenInfo token;
     token->lno=B->lno;
@@ -357,9 +384,9 @@ int main(){
     buffer->lno=1;
     //buffer->cno=1; 
     buffer->index=0;
-    buffer->currbuf=0;
+    buffer->currbuf=1;
     FILE* test=fopen("test.txt","r");
-    test=getStream(buffer,test);
+    //test=getStream(buffer,test);
     //test=getStream(buffer,test);
     printf("Buffer 1: %s\n", buffer->buf1);
     printf("Buffer 2: %s\n", buffer->buf2);
@@ -368,8 +395,13 @@ int main(){
     //printf("Character Number: %d\n", buffer->cno);
     printf("Line Number: %d\n", buffer->lno);
 
+    tokenInfo tkinf=getNextToken(buffer,test);
+    printf("value=%d\n",tkinf.lno);
+    printf("value=%d\n",tkinf.tkid);
+    printf("value=%d\n",tkinf.lex.ival);
 
-    test=getStream(buffer,test);
+
+    //test=getStream(buffer,test);
     printf("Buffer 1: %s\n", buffer->buf1);
     printf("Buffer 2: %s\n", buffer->buf2);
     printf("Current Buffer: %d\n", buffer->currbuf);
@@ -377,8 +409,8 @@ int main(){
     //printf("Character Number: %d\n", buffer->cno);
     printf("Line Number: %d\n", buffer->lno);
 
-    buffer->index=2;
+    /*buffer->index=2;
     tokenInfo tkinf=float_token(buffer,28);
-    printf("%f\n",tkinf.lex.rval);
+    printf("%f\n",tkinf.lex.rval);*/
     return 0;
 }
