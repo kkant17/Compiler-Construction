@@ -5,18 +5,148 @@
 #include <stdbool.h>
 #define NUMGRAMMAR 95
 #define MAX_LINE_LENGTH 1024
+<<<<<<< Updated upstream
 #define MAX_TERMINALS 56
 #define MAX_NONTERMINALS 52
+=======
+#define MAX_TERMINALS 58
+#define MAX_NON_TERMINALS 53
+>>>>>>> Stashed changes
 // Array to store grammar rules
 GrammarRule *grammarRules;
 int grammarRuleCount;
 
 // Array to store FIRST and FOLLOW sets
 FirstFollowSet *firstFollowSets;
+<<<<<<< Updated upstream
 int nonTerminalCount;
 
 // Array to store the parse table
 ParseTable *parseTable;
+=======
+int nonTerminalCount = 0;
+
+ParseTable *parseTable = NULL;
+
+// ==================== Non-Terminal Names ====================
+const char* nonTerminalNames[MAX_NON_TERMINALS] = {
+    "<program>",
+    "<mainFunction>",
+    "<otherFunctions>",
+    "<function>",
+    "<input_par>",
+    "<output_par>",
+    "<parameter_list>",
+    "<dataType>",
+    "<primitiveDatatype>",
+    "<constructedDatatype>",
+    "<remaining_list>",
+    "<stmts>",
+    "<typeDefinitions>",
+    "<actualOrRedefined>",
+    "<typeDefinition>",
+    "<fieldDefinitions>",
+    "<fieldDefinition>",
+    "<fieldType>",
+    "<moreFields>",
+    "<declarations>",
+    "<declaration>",
+    "<global_or_not>",
+    "<otherStmts>",
+    "<stmt>",
+    "<assignmentStmt>",
+    "<oneExpansion>",
+    "<moreExpansions>",
+    "<singleOrRecId>",
+    "<option_single_constructed>",
+    "<funCallStmt>",
+    "<outputParameters>",
+    "<inputParameters>",
+    "<iterativeStmt>",
+    "<conditionalStmt>",
+    "<elsePart>",
+    "<ioStmt>",
+    "<arithmeticExpression>",
+    "<expPrime>",
+    "<term>",
+    "<termPrime>",
+    "<factor>",
+    "<highPrecedenceOperators>",
+    "<lowPrecedenceOperators>",
+    "<booleanExpression>",
+    "<var>",
+    "<logicalOp>",
+    "<relationalOp>",
+    "<returnStmt>",
+    "<optionalReturn>",
+    "<idList>",
+    "<more_ids>",
+    "<definetypestmt>",
+    "<A>"
+};
+
+// ===================== Terminal Names =====================
+const char* terminalNames[MAX_TERMINALS] = {
+    "TK_ASSIGNOP",
+    "TK_FIELDID",
+    "TK_ID",
+    "TK_NUM",
+    "TK_RNUM",
+    "TK_FUNID",
+    "TK_RUID",
+    "TK_WITH",
+    "TK_PARAMETERS",
+    "TK_END",
+    "TK_WHILE",
+    "TK_UNION",
+    "TK_ENDUNION",
+    "TK_DEFINETYPE",
+    "TK_AS",
+    "TK_TYPE",
+    "TK_MAIN",
+    "TK_GLOBAL",
+    "TK_PARAMETER",
+    "TK_LIST",
+    "TK_SQL",
+    "TK_SQR",
+    "TK_INPUT",
+    "TK_OUTPUT",
+    "TK_INT",
+    "TK_REAL",
+    "TK_COMMA",
+    "TK_SEM",
+    "TK_COLON",
+    "TK_DOT",
+    "TK_ENDWHILE",
+    "TK_OP",
+    "TK_CL",
+    "TK_IF",
+    "TK_THEN",
+    "TK_ENDIF",
+    "TK_READ",
+    "TK_WRITE",
+    "TK_RETURN",
+    "TK_PLUS",
+    "TK_MINUS",
+    "TK_MUL",
+    "TK_DIV",
+    "TK_CALL",
+    "TK_RECORD",
+    "TK_ENDRECORD",
+    "TK_ELSE",
+    "TK_AND",
+    "TK_OR",
+    "TK_NOT",
+    "TK_LT",
+    "TK_LE",
+    "TK_EQ",
+    "TK_GT",
+    "TK_GE",
+    "TK_NE",
+    "TK_EPS",
+    "TK_DOLLAR"
+};
+>>>>>>> Stashed changes
 
 void storeGrammarRules() {
     FILE *file = fopen("updated_rules.txt", "r");
@@ -670,7 +800,11 @@ void storeGrammarRules() {
                     grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
                 }
                 else if (strcmp(rhs,"eps") == 0) {
+<<<<<<< Updated upstream
                     grammarRules[ruleNumber].rhs[rhsCount].tk.n = eps;
+=======
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.t = TK_EPS;
+>>>>>>> Stashed changes
                     grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
                 }
                 rhsCount++;
@@ -694,7 +828,129 @@ FirstFollowSet* ComputeFirstFollowSets() {
         exit(EXIT_FAILURE);
     }
 
+<<<<<<< Updated upstream
     // Allocate memory for firstFollowSets based on the number of non-terminals
+=======
+    // Array of non-terminal names for prettier printing
+    const char* nonTerminalNames[] = {
+        "program", "mainFunction", "otherFunctions", "function", 
+        "input_par", "output_par", "parameter_list", "dataType",
+        "primitiveDatatype", "constructedDatatype", "remaining_list",
+        "stmts", "typeDefinitions", "actualOrRedefined", "typeDefinition",
+        "fieldDefinitions", "fieldDefinition", "fieldType", "moreFields",
+        "declarations", "declaration", "global_or_not", "otherStmts",
+        "stmt", "assignmentStmt", "oneExpansion", "moreExpansions",
+        "singleOrRecId", "option_single_constructed", "funCallStmt",
+        "outputParameters", "inputParameters", "iterativeStmt",
+        "conditionalStmt", "elsePart", "ioStmt", "arithmeticExpression",
+        "expPrime", "term", "termPrime", "factor", "highPrecedenceOperators",
+        "lowPrecedenceOperators", "booleanExpression", "var", "logicalOp",
+        "relationalOp", "returnStmt", "optionalReturn", "idList",
+        "more_ids", "definetypestmt", "A"
+    };
+
+    // Array of terminal names for prettier printing
+    const char* terminalNames[] = {
+       "TK_ASSIGNOP",
+"TK_FIELDID",
+"TK_ID",
+"TK_NUM",
+"TK_RNUM",
+"TK_FUNID",
+"TK_RUID",
+"TK_WITH",
+"TK_PARAMETERS",
+"TK_END",
+"TK_WHILE",
+"TK_UNION",
+"TK_ENDUNION",
+"TK_DEFINETYPE",
+"TK_AS",
+"TK_TYPE",
+"TK_MAIN",
+"TK_GLOBAL",
+"TK_PARAMETER",
+"TK_LIST",
+"TK_SQL",
+"TK_SQR",
+"TK_INPUT",
+"TK_OUTPUT",
+"TK_INT",
+"TK_REAL",
+"TK_COMMA",
+"TK_SEM",
+"TK_COLON",
+"TK_DOT",
+"TK_ENDWHILE",
+"TK_OP",
+"TK_CL",
+"TK_IF",
+"TK_THEN",
+"TK_ENDIF",
+"TK_READ",
+"TK_WRITE",
+"TK_RETURN",
+"TK_PLUS",
+"TK_MINUS",
+"TK_MUL",
+"TK_DIV",
+"TK_CALL",
+"TK_RECORD",
+"TK_ENDRECORD",
+"TK_ELSE",
+"TK_AND",
+"TK_OR",
+"TK_NOT",
+"TK_LT",
+"TK_LE",
+"TK_EQ",
+"TK_GT",
+"TK_GE",
+"TK_NE",
+"eps"
+    };
+
+    for (int i = 0; i < MAX_NON_TERMINALS; i++) {
+        printf("FIRST(%s): { ", nonTerminalNames[i]);
+        for (int j = 0; j < firstFollowSets[i].firstCount; j++) {
+            // Print the terminal name if it's within valid range
+            if (firstFollowSets[i].firstSet[j] >= 0 && 
+                firstFollowSets[i].firstSet[j] < sizeof(terminalNames)/sizeof(terminalNames[0])) {
+                printf("%s", terminalNames[firstFollowSets[i].firstSet[j]]);
+                if (j < firstFollowSets[i].firstCount - 1) {
+                    printf(", ");
+                }
+            }
+        }
+        printf(" }\n");
+    }
+    printf("\nPrinting FOLLOW sets:\n");
+    printf("===================\n");
+    for (int i = 0; i < MAX_NON_TERMINALS; i++) {
+        printf("FOLLOW(%s): { ", nonTerminalNames[i]);
+        for (int j = 0; j < firstFollowSets[i].followCount; j++) {
+            if (firstFollowSets[i].followSet[j] == TK_DOLLAR) {
+                printf("$");
+                if (j < firstFollowSets[i].followCount - 1) {
+                    printf(", ");
+                }
+                continue;
+            }
+            
+            if (firstFollowSets[i].followSet[j] >= 0 && 
+                firstFollowSets[i].followSet[j] < sizeof(terminalNames)/sizeof(terminalNames[0])) {
+                printf("%s", terminalNames[firstFollowSets[i].followSet[j]]);
+                if (j < firstFollowSets[i].followCount - 1) {
+                    printf(", ");
+                }
+            }
+        }
+        printf(" }\n");
+    }
+}
+
+FirstFollowSet* computeFirstFollowSets() {
+>>>>>>> Stashed changes
     firstFollowSets = malloc(sizeof(FirstFollowSet) * NUMGRAMMAR);
 
     char line[MAX_LINE_LENGTH];
@@ -1072,6 +1328,7 @@ FirstFollowSet* ComputeFirstFollowSets() {
         }
     }
 
+<<<<<<< Updated upstream
     fclose(file);
     return firstFollowSets;
 }
@@ -1118,14 +1375,570 @@ void createParseTable(FirstFollowSet* F, ParseTable* T){
                     tk follow = F[grammarRules[i].lhs]->followSet[j];
                    T[grammarRules[i]->lhs][follow] = grammarRules[i];
                 }
+=======
+    firstFollowSets[program].firstSet[firstFollowSets[program].firstCount++] = TK_FUNID;
+    firstFollowSets[program].firstSet[firstFollowSets[program].firstCount++] = TK_MAIN;
+    firstFollowSets[mainFunction].firstSet[firstFollowSets[mainFunction].firstCount++] = TK_MAIN;
+    firstFollowSets[otherFunctions].firstSet[firstFollowSets[otherFunctions].firstCount++] = TK_FUNID;
+    firstFollowSets[otherFunctions].firstSet[firstFollowSets[otherFunctions].firstCount++] = TK_EPS;
+    firstFollowSets[function].firstSet[firstFollowSets[function].firstCount++] = TK_FUNID;
+    firstFollowSets[input_par].firstSet[firstFollowSets[input_par].firstCount++] = TK_INPUT;
+    firstFollowSets[output_par].firstSet[firstFollowSets[output_par].firstCount++] = TK_EPS;
+    firstFollowSets[output_par].firstSet[firstFollowSets[output_par].firstCount++] = TK_OUTPUT;
+    firstFollowSets[parameter_list].firstSet[firstFollowSets[parameter_list].firstCount++] = TK_INT;
+    firstFollowSets[parameter_list].firstSet[firstFollowSets[parameter_list].firstCount++] = TK_REAL;
+    firstFollowSets[parameter_list].firstSet[firstFollowSets[parameter_list].firstCount++] = TK_UNION;
+    firstFollowSets[parameter_list].firstSet[firstFollowSets[parameter_list].firstCount++] = TK_RUID;
+    firstFollowSets[parameter_list].firstSet[firstFollowSets[parameter_list].firstCount++] = TK_RECORD;
+    firstFollowSets[dataType].firstSet[firstFollowSets[dataType].firstCount++] = TK_INT;
+    firstFollowSets[dataType].firstSet[firstFollowSets[dataType].firstCount++] = TK_REAL;
+    firstFollowSets[dataType].firstSet[firstFollowSets[dataType].firstCount++] = TK_UNION;
+    firstFollowSets[dataType].firstSet[firstFollowSets[dataType].firstCount++] = TK_RUID;
+    firstFollowSets[dataType].firstSet[firstFollowSets[dataType].firstCount++] = TK_RECORD;
+    firstFollowSets[primitiveDatatype].firstSet[firstFollowSets[primitiveDatatype].firstCount++] = TK_INT;
+    firstFollowSets[primitiveDatatype].firstSet[firstFollowSets[primitiveDatatype].firstCount++] = TK_REAL;
+    firstFollowSets[constructedDatatype].firstSet[firstFollowSets[constructedDatatype].firstCount++] = TK_UNION;
+    firstFollowSets[constructedDatatype].firstSet[firstFollowSets[constructedDatatype].firstCount++] = TK_RUID;
+    firstFollowSets[constructedDatatype].firstSet[firstFollowSets[constructedDatatype].firstCount++] = TK_RECORD;
+    firstFollowSets[remaining_list].firstSet[firstFollowSets[remaining_list].firstCount++] = TK_EPS;
+    firstFollowSets[remaining_list].firstSet[firstFollowSets[remaining_list].firstCount++] = TK_COMMA;
+    firstFollowSets[stmts].firstSet[firstFollowSets[stmts].firstCount++] = TK_WRITE;
+    firstFollowSets[stmts].firstSet[firstFollowSets[stmts].firstCount++] = TK_DEFINETYPE;
+    firstFollowSets[stmts].firstSet[firstFollowSets[stmts].firstCount++] = TK_SQL;
+    firstFollowSets[stmts].firstSet[firstFollowSets[stmts].firstCount++] = TK_WHILE;
+    firstFollowSets[stmts].firstSet[firstFollowSets[stmts].firstCount++] = TK_UNION;
+    firstFollowSets[stmts].firstSet[firstFollowSets[stmts].firstCount++] = TK_IF;
+    firstFollowSets[stmts].firstSet[firstFollowSets[stmts].firstCount++] = TK_RECORD;
+    firstFollowSets[stmts].firstSet[firstFollowSets[stmts].firstCount++] = TK_READ;
+    firstFollowSets[stmts].firstSet[firstFollowSets[stmts].firstCount++] = TK_CALL;
+    firstFollowSets[stmts].firstSet[firstFollowSets[stmts].firstCount++] = TK_TYPE;
+    firstFollowSets[stmts].firstSet[firstFollowSets[stmts].firstCount++] = TK_RETURN;
+    firstFollowSets[stmts].firstSet[firstFollowSets[stmts].firstCount++] = TK_ID;
+    firstFollowSets[typeDefinitions].firstSet[firstFollowSets[typeDefinitions].firstCount++] = TK_UNION;
+    firstFollowSets[typeDefinitions].firstSet[firstFollowSets[typeDefinitions].firstCount++] = TK_EPS;
+    firstFollowSets[typeDefinitions].firstSet[firstFollowSets[typeDefinitions].firstCount++] = TK_RECORD;
+    firstFollowSets[typeDefinitions].firstSet[firstFollowSets[typeDefinitions].firstCount++] = TK_DEFINETYPE;
+    firstFollowSets[actualOrRedefined].firstSet[firstFollowSets[actualOrRedefined].firstCount++] = TK_UNION;
+    firstFollowSets[actualOrRedefined].firstSet[firstFollowSets[actualOrRedefined].firstCount++] = TK_RECORD;
+    firstFollowSets[actualOrRedefined].firstSet[firstFollowSets[actualOrRedefined].firstCount++] = TK_DEFINETYPE;
+    firstFollowSets[typeDefinition].firstSet[firstFollowSets[typeDefinition].firstCount++] = TK_UNION;
+    firstFollowSets[typeDefinition].firstSet[firstFollowSets[typeDefinition].firstCount++] = TK_RECORD;
+    firstFollowSets[fieldDefinitions].firstSet[firstFollowSets[fieldDefinitions].firstCount++] = TK_TYPE;
+    firstFollowSets[fieldDefinition].firstSet[firstFollowSets[fieldDefinition].firstCount++] = TK_TYPE;
+    firstFollowSets[fieldType].firstSet[firstFollowSets[fieldType].firstCount++] = TK_INT;
+    firstFollowSets[fieldType].firstSet[firstFollowSets[fieldType].firstCount++] = TK_REAL;
+    firstFollowSets[fieldType].firstSet[firstFollowSets[fieldType].firstCount++] = TK_UNION;
+    firstFollowSets[fieldType].firstSet[firstFollowSets[fieldType].firstCount++] = TK_RUID;
+    firstFollowSets[fieldType].firstSet[firstFollowSets[fieldType].firstCount++] = TK_RECORD;
+    firstFollowSets[moreFields].firstSet[firstFollowSets[moreFields].firstCount++] = TK_TYPE;
+    firstFollowSets[moreFields].firstSet[firstFollowSets[moreFields].firstCount++] = TK_EPS;
+    firstFollowSets[declarations].firstSet[firstFollowSets[declarations].firstCount++] = TK_TYPE;
+    firstFollowSets[declarations].firstSet[firstFollowSets[declarations].firstCount++] = TK_EPS;
+    firstFollowSets[declaration].firstSet[firstFollowSets[declaration].firstCount++] = TK_TYPE;
+    firstFollowSets[global_or_not].firstSet[firstFollowSets[global_or_not].firstCount++] = TK_COLON;
+    firstFollowSets[global_or_not].firstSet[firstFollowSets[global_or_not].firstCount++] = TK_EPS;
+    firstFollowSets[otherStmts].firstSet[firstFollowSets[otherStmts].firstCount++] = TK_WRITE;
+    firstFollowSets[otherStmts].firstSet[firstFollowSets[otherStmts].firstCount++] = TK_SQL;
+    firstFollowSets[otherStmts].firstSet[firstFollowSets[otherStmts].firstCount++] = TK_WHILE;
+    firstFollowSets[otherStmts].firstSet[firstFollowSets[otherStmts].firstCount++] = TK_EPS;
+    firstFollowSets[otherStmts].firstSet[firstFollowSets[otherStmts].firstCount++] = TK_IF;
+    firstFollowSets[otherStmts].firstSet[firstFollowSets[otherStmts].firstCount++] = TK_READ;
+    firstFollowSets[otherStmts].firstSet[firstFollowSets[otherStmts].firstCount++] = TK_CALL;
+    firstFollowSets[otherStmts].firstSet[firstFollowSets[otherStmts].firstCount++] = TK_ID;
+    firstFollowSets[stmt].firstSet[firstFollowSets[stmt].firstCount++] = TK_WRITE;
+    firstFollowSets[stmt].firstSet[firstFollowSets[stmt].firstCount++] = TK_SQL;
+    firstFollowSets[stmt].firstSet[firstFollowSets[stmt].firstCount++] = TK_WHILE;
+    firstFollowSets[stmt].firstSet[firstFollowSets[stmt].firstCount++] = TK_IF;
+    firstFollowSets[stmt].firstSet[firstFollowSets[stmt].firstCount++] = TK_READ;
+    firstFollowSets[stmt].firstSet[firstFollowSets[stmt].firstCount++] = TK_CALL;
+    firstFollowSets[stmt].firstSet[firstFollowSets[stmt].firstCount++] = TK_ID;
+    firstFollowSets[assignmentStmt].firstSet[firstFollowSets[assignmentStmt].firstCount++] = TK_ID;
+    firstFollowSets[oneExpansion].firstSet[firstFollowSets[oneExpansion].firstCount++] = TK_DOT;
+    firstFollowSets[moreExpansions].firstSet[firstFollowSets[moreExpansions].firstCount++] = TK_DOT;
+    firstFollowSets[moreExpansions].firstSet[firstFollowSets[moreExpansions].firstCount++] = TK_EPS;
+    firstFollowSets[singleOrRecId].firstSet[firstFollowSets[singleOrRecId].firstCount++] = TK_ID;
+    firstFollowSets[option_single_constructed].firstSet[firstFollowSets[option_single_constructed].firstCount++] = TK_DOT;
+    firstFollowSets[option_single_constructed].firstSet[firstFollowSets[option_single_constructed].firstCount++] = TK_EPS;
+    firstFollowSets[funCallStmt].firstSet[firstFollowSets[funCallStmt].firstCount++] = TK_SQL;
+    firstFollowSets[funCallStmt].firstSet[firstFollowSets[funCallStmt].firstCount++] = TK_CALL;
+    firstFollowSets[outputParameters].firstSet[firstFollowSets[outputParameters].firstCount++] = TK_EPS;
+    firstFollowSets[outputParameters].firstSet[firstFollowSets[outputParameters].firstCount++] = TK_SQL;
+    firstFollowSets[inputParameters].firstSet[firstFollowSets[inputParameters].firstCount++] = TK_SQL;
+    firstFollowSets[iterativeStmt].firstSet[firstFollowSets[iterativeStmt].firstCount++] = TK_WHILE;
+    firstFollowSets[conditionalStmt].firstSet[firstFollowSets[conditionalStmt].firstCount++] = TK_IF;
+    firstFollowSets[elsePart].firstSet[firstFollowSets[elsePart].firstCount++] = TK_ELSE;
+    firstFollowSets[elsePart].firstSet[firstFollowSets[elsePart].firstCount++] = TK_ENDIF;
+    firstFollowSets[ioStmt].firstSet[firstFollowSets[ioStmt].firstCount++] = TK_WRITE;
+    firstFollowSets[ioStmt].firstSet[firstFollowSets[ioStmt].firstCount++] = TK_READ;
+    firstFollowSets[arithmeticExpression].firstSet[firstFollowSets[arithmeticExpression].firstCount++] = TK_ID;
+    firstFollowSets[arithmeticExpression].firstSet[firstFollowSets[arithmeticExpression].firstCount++] = TK_RNUM;
+    firstFollowSets[arithmeticExpression].firstSet[firstFollowSets[arithmeticExpression].firstCount++] = TK_NUM;
+    firstFollowSets[arithmeticExpression].firstSet[firstFollowSets[arithmeticExpression].firstCount++] = TK_OP;
+    firstFollowSets[expPrime].firstSet[firstFollowSets[expPrime].firstCount++] = TK_PLUS;
+    firstFollowSets[expPrime].firstSet[firstFollowSets[expPrime].firstCount++] = TK_EPS;
+    firstFollowSets[expPrime].firstSet[firstFollowSets[expPrime].firstCount++] = TK_MINUS;
+    firstFollowSets[term].firstSet[firstFollowSets[term].firstCount++] = TK_ID;
+    firstFollowSets[term].firstSet[firstFollowSets[term].firstCount++] = TK_RNUM;
+    firstFollowSets[term].firstSet[firstFollowSets[term].firstCount++] = TK_NUM;
+    firstFollowSets[term].firstSet[firstFollowSets[term].firstCount++] = TK_OP;
+    firstFollowSets[termPrime].firstSet[firstFollowSets[termPrime].firstCount++] = TK_DIV;
+    firstFollowSets[termPrime].firstSet[firstFollowSets[termPrime].firstCount++] = TK_EPS;
+    firstFollowSets[termPrime].firstSet[firstFollowSets[termPrime].firstCount++] = TK_MUL;
+    firstFollowSets[factor].firstSet[firstFollowSets[factor].firstCount++] = TK_ID;
+    firstFollowSets[factor].firstSet[firstFollowSets[factor].firstCount++] = TK_RNUM;
+    firstFollowSets[factor].firstSet[firstFollowSets[factor].firstCount++] = TK_NUM;
+    firstFollowSets[factor].firstSet[firstFollowSets[factor].firstCount++] = TK_OP;
+    firstFollowSets[highPrecedenceOperators].firstSet[firstFollowSets[highPrecedenceOperators].firstCount++] = TK_DIV;
+    firstFollowSets[highPrecedenceOperators].firstSet[firstFollowSets[highPrecedenceOperators].firstCount++] = TK_MUL;
+    firstFollowSets[lowPrecedenceOperators].firstSet[firstFollowSets[lowPrecedenceOperators].firstCount++] = TK_PLUS;
+    firstFollowSets[lowPrecedenceOperators].firstSet[firstFollowSets[lowPrecedenceOperators].firstCount++] = TK_MINUS;
+    firstFollowSets[booleanExpression].firstSet[firstFollowSets[booleanExpression].firstCount++] = TK_RNUM;
+    firstFollowSets[booleanExpression].firstSet[firstFollowSets[booleanExpression].firstCount++] = TK_OP;
+    firstFollowSets[booleanExpression].firstSet[firstFollowSets[booleanExpression].firstCount++] = TK_NOT;
+    firstFollowSets[booleanExpression].firstSet[firstFollowSets[booleanExpression].firstCount++] = TK_NUM;
+    firstFollowSets[booleanExpression].firstSet[firstFollowSets[booleanExpression].firstCount++] = TK_ID;
+    firstFollowSets[var].firstSet[firstFollowSets[var].firstCount++] = TK_RNUM;
+    firstFollowSets[var].firstSet[firstFollowSets[var].firstCount++] = TK_NUM;
+    firstFollowSets[var].firstSet[firstFollowSets[var].firstCount++] = TK_ID;
+    firstFollowSets[logicalOp].firstSet[firstFollowSets[logicalOp].firstCount++] = TK_AND;
+    firstFollowSets[logicalOp].firstSet[firstFollowSets[logicalOp].firstCount++] = TK_OR;
+    firstFollowSets[relationalOp].firstSet[firstFollowSets[relationalOp].firstCount++] = TK_GT;
+    firstFollowSets[relationalOp].firstSet[firstFollowSets[relationalOp].firstCount++] = TK_GE;
+    firstFollowSets[relationalOp].firstSet[firstFollowSets[relationalOp].firstCount++] = TK_NE;
+    firstFollowSets[relationalOp].firstSet[firstFollowSets[relationalOp].firstCount++] = TK_EQ;
+    firstFollowSets[relationalOp].firstSet[firstFollowSets[relationalOp].firstCount++] = TK_LT;
+    firstFollowSets[relationalOp].firstSet[firstFollowSets[relationalOp].firstCount++] = TK_LE;
+    firstFollowSets[returnStmt].firstSet[firstFollowSets[returnStmt].firstCount++] = TK_RETURN;
+    firstFollowSets[optionalReturn].firstSet[firstFollowSets[optionalReturn].firstCount++] = TK_EPS;
+    firstFollowSets[optionalReturn].firstSet[firstFollowSets[optionalReturn].firstCount++] = TK_SQL;
+    firstFollowSets[idList].firstSet[firstFollowSets[idList].firstCount++] = TK_ID;
+    firstFollowSets[more_ids].firstSet[firstFollowSets[more_ids].firstCount++] = TK_EPS;
+    firstFollowSets[more_ids].firstSet[firstFollowSets[more_ids].firstCount++] = TK_COMMA;
+    firstFollowSets[definetypestmt].firstSet[firstFollowSets[definetypestmt].firstCount++] = TK_DEFINETYPE;
+    firstFollowSets[A].firstSet[firstFollowSets[A].firstCount++] = TK_UNION;
+    firstFollowSets[A].firstSet[firstFollowSets[A].firstCount++] = TK_RECORD;
+
+
+    // Hardcode the FOLLOW sets
+    firstFollowSets[program].followSet[firstFollowSets[program].followCount++] = TK_DOLLAR;
+    firstFollowSets[mainFunction].followSet[firstFollowSets[mainFunction].followCount++] = TK_DOLLAR;
+    firstFollowSets[otherFunctions].followSet[firstFollowSets[otherFunctions].followCount++] = TK_MAIN;
+    firstFollowSets[function].followSet[firstFollowSets[function].followCount++] = TK_FUNID;
+    firstFollowSets[function].followSet[firstFollowSets[function].followCount++] = TK_MAIN;
+    firstFollowSets[input_par].followSet[firstFollowSets[input_par].followCount++] = TK_SEM;
+    firstFollowSets[input_par].followSet[firstFollowSets[input_par].followCount++] = TK_OUTPUT;
+    firstFollowSets[output_par].followSet[firstFollowSets[output_par].followCount++] = TK_SEM;
+    firstFollowSets[parameter_list].followSet[firstFollowSets[parameter_list].followCount++] = TK_SQR;
+    firstFollowSets[dataType].followSet[firstFollowSets[dataType].followCount++] = TK_COLON;
+    firstFollowSets[dataType].followSet[firstFollowSets[dataType].followCount++] = TK_ID;
+    firstFollowSets[primitiveDatatype].followSet[firstFollowSets[primitiveDatatype].followCount++] = TK_COLON;
+    firstFollowSets[primitiveDatatype].followSet[firstFollowSets[primitiveDatatype].followCount++] = TK_ID;
+    firstFollowSets[constructedDatatype].followSet[firstFollowSets[constructedDatatype].followCount++] = TK_COLON;
+    firstFollowSets[constructedDatatype].followSet[firstFollowSets[constructedDatatype].followCount++] = TK_ID;
+    firstFollowSets[remaining_list].followSet[firstFollowSets[remaining_list].followCount++] = TK_SQR;
+    firstFollowSets[stmts].followSet[firstFollowSets[stmts].followCount++] = TK_END;
+    firstFollowSets[typeDefinitions].followSet[firstFollowSets[typeDefinitions].followCount++] = TK_WRITE;
+    firstFollowSets[typeDefinitions].followSet[firstFollowSets[typeDefinitions].followCount++] = TK_SQL;
+    firstFollowSets[typeDefinitions].followSet[firstFollowSets[typeDefinitions].followCount++] = TK_WHILE;
+    firstFollowSets[typeDefinitions].followSet[firstFollowSets[typeDefinitions].followCount++] = TK_IF;
+    firstFollowSets[typeDefinitions].followSet[firstFollowSets[typeDefinitions].followCount++] = TK_READ;
+    firstFollowSets[typeDefinitions].followSet[firstFollowSets[typeDefinitions].followCount++] = TK_CALL;
+    firstFollowSets[typeDefinitions].followSet[firstFollowSets[typeDefinitions].followCount++] = TK_TYPE;
+    firstFollowSets[typeDefinitions].followSet[firstFollowSets[typeDefinitions].followCount++] = TK_RETURN;
+    firstFollowSets[typeDefinitions].followSet[firstFollowSets[typeDefinitions].followCount++] = TK_ID;
+    firstFollowSets[actualOrRedefined].followSet[firstFollowSets[actualOrRedefined].followCount++] = TK_WRITE;
+    firstFollowSets[actualOrRedefined].followSet[firstFollowSets[actualOrRedefined].followCount++] = TK_DEFINETYPE;
+    firstFollowSets[actualOrRedefined].followSet[firstFollowSets[actualOrRedefined].followCount++] = TK_SQL;
+    firstFollowSets[actualOrRedefined].followSet[firstFollowSets[actualOrRedefined].followCount++] = TK_WHILE;
+    firstFollowSets[actualOrRedefined].followSet[firstFollowSets[actualOrRedefined].followCount++] = TK_UNION;
+    firstFollowSets[actualOrRedefined].followSet[firstFollowSets[actualOrRedefined].followCount++] = TK_IF;
+    firstFollowSets[actualOrRedefined].followSet[firstFollowSets[actualOrRedefined].followCount++] = TK_RECORD;
+    firstFollowSets[actualOrRedefined].followSet[firstFollowSets[actualOrRedefined].followCount++] = TK_READ;
+    firstFollowSets[actualOrRedefined].followSet[firstFollowSets[actualOrRedefined].followCount++] = TK_CALL;
+    firstFollowSets[actualOrRedefined].followSet[firstFollowSets[actualOrRedefined].followCount++] = TK_TYPE;
+    firstFollowSets[actualOrRedefined].followSet[firstFollowSets[actualOrRedefined].followCount++] = TK_RETURN;
+    firstFollowSets[actualOrRedefined].followSet[firstFollowSets[actualOrRedefined].followCount++] = TK_ID;
+    firstFollowSets[typeDefinition].followSet[firstFollowSets[typeDefinition].followCount++] = TK_WRITE;
+    firstFollowSets[typeDefinition].followSet[firstFollowSets[typeDefinition].followCount++] = TK_DEFINETYPE;
+    firstFollowSets[typeDefinition].followSet[firstFollowSets[typeDefinition].followCount++] = TK_SQL;
+    firstFollowSets[typeDefinition].followSet[firstFollowSets[typeDefinition].followCount++] = TK_WHILE;
+    firstFollowSets[typeDefinition].followSet[firstFollowSets[typeDefinition].followCount++] = TK_UNION;
+    firstFollowSets[typeDefinition].followSet[firstFollowSets[typeDefinition].followCount++] = TK_IF;
+    firstFollowSets[typeDefinition].followSet[firstFollowSets[typeDefinition].followCount++] = TK_RECORD;
+    firstFollowSets[typeDefinition].followSet[firstFollowSets[typeDefinition].followCount++] = TK_READ;
+    firstFollowSets[typeDefinition].followSet[firstFollowSets[typeDefinition].followCount++] = TK_CALL;
+    firstFollowSets[typeDefinition].followSet[firstFollowSets[typeDefinition].followCount++] = TK_TYPE;
+    firstFollowSets[typeDefinition].followSet[firstFollowSets[typeDefinition].followCount++] = TK_RETURN;
+    firstFollowSets[typeDefinition].followSet[firstFollowSets[typeDefinition].followCount++] = TK_ID;
+    firstFollowSets[fieldDefinitions].followSet[firstFollowSets[fieldDefinitions].followCount++] = TK_ENDUNION;
+    firstFollowSets[fieldDefinitions].followSet[firstFollowSets[fieldDefinitions].followCount++] = TK_ENDRECORD;
+    firstFollowSets[fieldDefinition].followSet[firstFollowSets[fieldDefinition].followCount++] = TK_TYPE;
+    firstFollowSets[fieldDefinition].followSet[firstFollowSets[fieldDefinition].followCount++] = TK_ENDUNION;
+    firstFollowSets[fieldDefinition].followSet[firstFollowSets[fieldDefinition].followCount++] = TK_ENDRECORD;
+    firstFollowSets[fieldType].followSet[firstFollowSets[fieldType].followCount++] = TK_COLON;
+    firstFollowSets[moreFields].followSet[firstFollowSets[moreFields].followCount++] = TK_ENDUNION;
+    firstFollowSets[moreFields].followSet[firstFollowSets[moreFields].followCount++] = TK_ENDRECORD;
+    firstFollowSets[declarations].followSet[firstFollowSets[declarations].followCount++] = TK_WRITE;
+    firstFollowSets[declarations].followSet[firstFollowSets[declarations].followCount++] = TK_SQL;
+    firstFollowSets[declarations].followSet[firstFollowSets[declarations].followCount++] = TK_WHILE;
+    firstFollowSets[declarations].followSet[firstFollowSets[declarations].followCount++] = TK_IF;
+    firstFollowSets[declarations].followSet[firstFollowSets[declarations].followCount++] = TK_READ;
+    firstFollowSets[declarations].followSet[firstFollowSets[declarations].followCount++] = TK_CALL;
+    firstFollowSets[declarations].followSet[firstFollowSets[declarations].followCount++] = TK_RETURN;
+    firstFollowSets[declarations].followSet[firstFollowSets[declarations].followCount++] = TK_ID;
+    firstFollowSets[declaration].followSet[firstFollowSets[declaration].followCount++] = TK_WRITE;
+    firstFollowSets[declaration].followSet[firstFollowSets[declaration].followCount++] = TK_SQL;
+    firstFollowSets[declaration].followSet[firstFollowSets[declaration].followCount++] = TK_WHILE;
+    firstFollowSets[declaration].followSet[firstFollowSets[declaration].followCount++] = TK_IF;
+    firstFollowSets[declaration].followSet[firstFollowSets[declaration].followCount++] = TK_READ;
+    firstFollowSets[declaration].followSet[firstFollowSets[declaration].followCount++] = TK_CALL;
+    firstFollowSets[declaration].followSet[firstFollowSets[declaration].followCount++] = TK_TYPE;
+    firstFollowSets[declaration].followSet[firstFollowSets[declaration].followCount++] = TK_RETURN;
+    firstFollowSets[declaration].followSet[firstFollowSets[declaration].followCount++] = TK_ID;
+    firstFollowSets[global_or_not].followSet[firstFollowSets[global_or_not].followCount++] = TK_SEM;
+    firstFollowSets[otherStmts].followSet[firstFollowSets[otherStmts].followCount++] = TK_ENDWHILE;
+    firstFollowSets[otherStmts].followSet[firstFollowSets[otherStmts].followCount++] = TK_RETURN;
+    firstFollowSets[otherStmts].followSet[firstFollowSets[otherStmts].followCount++] = TK_ELSE;
+    firstFollowSets[otherStmts].followSet[firstFollowSets[otherStmts].followCount++] = TK_ENDIF;
+    firstFollowSets[stmt].followSet[firstFollowSets[stmt].followCount++] = TK_WRITE;
+    firstFollowSets[stmt].followSet[firstFollowSets[stmt].followCount++] = TK_SQL;
+    firstFollowSets[stmt].followSet[firstFollowSets[stmt].followCount++] = TK_WHILE;
+    firstFollowSets[stmt].followSet[firstFollowSets[stmt].followCount++] = TK_ELSE;
+    firstFollowSets[stmt].followSet[firstFollowSets[stmt].followCount++] = TK_ENDWHILE;
+    firstFollowSets[stmt].followSet[firstFollowSets[stmt].followCount++] = TK_IF;
+    firstFollowSets[stmt].followSet[firstFollowSets[stmt].followCount++] = TK_READ;
+    firstFollowSets[stmt].followSet[firstFollowSets[stmt].followCount++] = TK_CALL;
+    firstFollowSets[stmt].followSet[firstFollowSets[stmt].followCount++] = TK_RETURN;
+    firstFollowSets[stmt].followSet[firstFollowSets[stmt].followCount++] = TK_ID;
+    firstFollowSets[stmt].followSet[firstFollowSets[stmt].followCount++] = TK_ENDIF;
+    firstFollowSets[assignmentStmt].followSet[firstFollowSets[assignmentStmt].followCount++] = TK_WRITE;
+    firstFollowSets[assignmentStmt].followSet[firstFollowSets[assignmentStmt].followCount++] = TK_SQL;
+    firstFollowSets[assignmentStmt].followSet[firstFollowSets[assignmentStmt].followCount++] = TK_WHILE;
+    firstFollowSets[assignmentStmt].followSet[firstFollowSets[assignmentStmt].followCount++] = TK_ELSE;
+    firstFollowSets[assignmentStmt].followSet[firstFollowSets[assignmentStmt].followCount++] = TK_ENDWHILE;
+    firstFollowSets[assignmentStmt].followSet[firstFollowSets[assignmentStmt].followCount++] = TK_IF;
+    firstFollowSets[assignmentStmt].followSet[firstFollowSets[assignmentStmt].followCount++] = TK_READ;
+    firstFollowSets[assignmentStmt].followSet[firstFollowSets[assignmentStmt].followCount++] = TK_CALL;
+    firstFollowSets[assignmentStmt].followSet[firstFollowSets[assignmentStmt].followCount++] = TK_RETURN;
+    firstFollowSets[assignmentStmt].followSet[firstFollowSets[assignmentStmt].followCount++] = TK_ID;
+    firstFollowSets[assignmentStmt].followSet[firstFollowSets[assignmentStmt].followCount++] = TK_ENDIF;
+    firstFollowSets[oneExpansion].followSet[firstFollowSets[oneExpansion].followCount++] = TK_GT;
+    firstFollowSets[oneExpansion].followSet[firstFollowSets[oneExpansion].followCount++] = TK_MUL;
+    firstFollowSets[oneExpansion].followSet[firstFollowSets[oneExpansion].followCount++] = TK_GE;
+    firstFollowSets[oneExpansion].followSet[firstFollowSets[oneExpansion].followCount++] = TK_SEM;
+    firstFollowSets[oneExpansion].followSet[firstFollowSets[oneExpansion].followCount++] = TK_NE;
+    firstFollowSets[oneExpansion].followSet[firstFollowSets[oneExpansion].followCount++] = TK_DIV;
+    firstFollowSets[oneExpansion].followSet[firstFollowSets[oneExpansion].followCount++] = TK_EQ;
+    firstFollowSets[oneExpansion].followSet[firstFollowSets[oneExpansion].followCount++] = TK_DOT;
+    firstFollowSets[oneExpansion].followSet[firstFollowSets[oneExpansion].followCount++] = TK_LT;
+    firstFollowSets[oneExpansion].followSet[firstFollowSets[oneExpansion].followCount++] = TK_ASSIGNOP;
+    firstFollowSets[oneExpansion].followSet[firstFollowSets[oneExpansion].followCount++] = TK_CL;
+    firstFollowSets[oneExpansion].followSet[firstFollowSets[oneExpansion].followCount++] = TK_PLUS;
+    firstFollowSets[oneExpansion].followSet[firstFollowSets[oneExpansion].followCount++] = TK_LE;
+    firstFollowSets[oneExpansion].followSet[firstFollowSets[oneExpansion].followCount++] = TK_MINUS;
+    firstFollowSets[moreExpansions].followSet[firstFollowSets[moreExpansions].followCount++] = TK_GT;
+    firstFollowSets[moreExpansions].followSet[firstFollowSets[moreExpansions].followCount++] = TK_MUL;
+    firstFollowSets[moreExpansions].followSet[firstFollowSets[moreExpansions].followCount++] = TK_GE;
+    firstFollowSets[moreExpansions].followSet[firstFollowSets[moreExpansions].followCount++] = TK_SEM;
+    firstFollowSets[moreExpansions].followSet[firstFollowSets[moreExpansions].followCount++] = TK_NE;
+    firstFollowSets[moreExpansions].followSet[firstFollowSets[moreExpansions].followCount++] = TK_DIV;
+    firstFollowSets[moreExpansions].followSet[firstFollowSets[moreExpansions].followCount++] = TK_EQ;
+    firstFollowSets[moreExpansions].followSet[firstFollowSets[moreExpansions].followCount++] = TK_LT;
+    firstFollowSets[moreExpansions].followSet[firstFollowSets[moreExpansions].followCount++] = TK_ASSIGNOP;
+    firstFollowSets[moreExpansions].followSet[firstFollowSets[moreExpansions].followCount++] = TK_CL;
+    firstFollowSets[moreExpansions].followSet[firstFollowSets[moreExpansions].followCount++] = TK_PLUS;
+    firstFollowSets[moreExpansions].followSet[firstFollowSets[moreExpansions].followCount++] = TK_LE;
+    firstFollowSets[moreExpansions].followSet[firstFollowSets[moreExpansions].followCount++] = TK_MINUS;
+    firstFollowSets[singleOrRecId].followSet[firstFollowSets[singleOrRecId].followCount++] = TK_GT;
+    firstFollowSets[singleOrRecId].followSet[firstFollowSets[singleOrRecId].followCount++] = TK_MUL;
+    firstFollowSets[singleOrRecId].followSet[firstFollowSets[singleOrRecId].followCount++] = TK_GE;
+    firstFollowSets[singleOrRecId].followSet[firstFollowSets[singleOrRecId].followCount++] = TK_SEM;
+    firstFollowSets[singleOrRecId].followSet[firstFollowSets[singleOrRecId].followCount++] = TK_NE;
+    firstFollowSets[singleOrRecId].followSet[firstFollowSets[singleOrRecId].followCount++] = TK_DIV;
+    firstFollowSets[singleOrRecId].followSet[firstFollowSets[singleOrRecId].followCount++] = TK_EQ;
+    firstFollowSets[singleOrRecId].followSet[firstFollowSets[singleOrRecId].followCount++] = TK_LT;
+    firstFollowSets[singleOrRecId].followSet[firstFollowSets[singleOrRecId].followCount++] = TK_ASSIGNOP;
+    firstFollowSets[singleOrRecId].followSet[firstFollowSets[singleOrRecId].followCount++] = TK_CL;
+    firstFollowSets[singleOrRecId].followSet[firstFollowSets[singleOrRecId].followCount++] = TK_PLUS;
+    firstFollowSets[singleOrRecId].followSet[firstFollowSets[singleOrRecId].followCount++] = TK_LE;
+    firstFollowSets[singleOrRecId].followSet[firstFollowSets[singleOrRecId].followCount++] = TK_MINUS;
+    firstFollowSets[option_single_constructed].followSet[firstFollowSets[option_single_constructed].followCount++] = TK_GT;
+    firstFollowSets[option_single_constructed].followSet[firstFollowSets[option_single_constructed].followCount++] = TK_MUL;
+    firstFollowSets[option_single_constructed].followSet[firstFollowSets[option_single_constructed].followCount++] = TK_GE;
+    firstFollowSets[option_single_constructed].followSet[firstFollowSets[option_single_constructed].followCount++] = TK_SEM;
+    firstFollowSets[option_single_constructed].followSet[firstFollowSets[option_single_constructed].followCount++] = TK_NE;
+    firstFollowSets[option_single_constructed].followSet[firstFollowSets[option_single_constructed].followCount++] = TK_DIV;
+    firstFollowSets[option_single_constructed].followSet[firstFollowSets[option_single_constructed].followCount++] = TK_EQ;
+    firstFollowSets[option_single_constructed].followSet[firstFollowSets[option_single_constructed].followCount++] = TK_LT;
+    firstFollowSets[option_single_constructed].followSet[firstFollowSets[option_single_constructed].followCount++] = TK_ASSIGNOP;
+    firstFollowSets[option_single_constructed].followSet[firstFollowSets[option_single_constructed].followCount++] = TK_CL;
+    firstFollowSets[option_single_constructed].followSet[firstFollowSets[option_single_constructed].followCount++] = TK_PLUS;
+    firstFollowSets[option_single_constructed].followSet[firstFollowSets[option_single_constructed].followCount++] = TK_LE;
+    firstFollowSets[option_single_constructed].followSet[firstFollowSets[option_single_constructed].followCount++] = TK_MINUS;
+    firstFollowSets[funCallStmt].followSet[firstFollowSets[funCallStmt].followCount++] = TK_WRITE;
+    firstFollowSets[funCallStmt].followSet[firstFollowSets[funCallStmt].followCount++] = TK_SQL;
+    firstFollowSets[funCallStmt].followSet[firstFollowSets[funCallStmt].followCount++] = TK_WHILE;
+    firstFollowSets[funCallStmt].followSet[firstFollowSets[funCallStmt].followCount++] = TK_ELSE;
+    firstFollowSets[funCallStmt].followSet[firstFollowSets[funCallStmt].followCount++] = TK_ENDWHILE;
+    firstFollowSets[funCallStmt].followSet[firstFollowSets[funCallStmt].followCount++] = TK_IF;
+    firstFollowSets[funCallStmt].followSet[firstFollowSets[funCallStmt].followCount++] = TK_READ;
+    firstFollowSets[funCallStmt].followSet[firstFollowSets[funCallStmt].followCount++] = TK_CALL;
+    firstFollowSets[funCallStmt].followSet[firstFollowSets[funCallStmt].followCount++] = TK_RETURN;
+    firstFollowSets[funCallStmt].followSet[firstFollowSets[funCallStmt].followCount++] = TK_ID;
+    firstFollowSets[funCallStmt].followSet[firstFollowSets[funCallStmt].followCount++] = TK_ENDIF;
+    firstFollowSets[outputParameters].followSet[firstFollowSets[outputParameters].followCount++] = TK_CALL;
+    firstFollowSets[inputParameters].followSet[firstFollowSets[inputParameters].followCount++] = TK_SEM;
+    firstFollowSets[iterativeStmt].followSet[firstFollowSets[iterativeStmt].followCount++] = TK_WRITE;
+    firstFollowSets[iterativeStmt].followSet[firstFollowSets[iterativeStmt].followCount++] = TK_SQL;
+    firstFollowSets[iterativeStmt].followSet[firstFollowSets[iterativeStmt].followCount++] = TK_WHILE;
+    firstFollowSets[iterativeStmt].followSet[firstFollowSets[iterativeStmt].followCount++] = TK_ELSE;
+    firstFollowSets[iterativeStmt].followSet[firstFollowSets[iterativeStmt].followCount++] = TK_ENDWHILE;
+    firstFollowSets[iterativeStmt].followSet[firstFollowSets[iterativeStmt].followCount++] = TK_IF;
+    firstFollowSets[iterativeStmt].followSet[firstFollowSets[iterativeStmt].followCount++] = TK_READ;
+    firstFollowSets[iterativeStmt].followSet[firstFollowSets[iterativeStmt].followCount++] = TK_CALL;
+    firstFollowSets[iterativeStmt].followSet[firstFollowSets[iterativeStmt].followCount++] = TK_RETURN;
+    firstFollowSets[iterativeStmt].followSet[firstFollowSets[iterativeStmt].followCount++] = TK_ID;
+    firstFollowSets[iterativeStmt].followSet[firstFollowSets[iterativeStmt].followCount++] = TK_ENDIF;
+    firstFollowSets[conditionalStmt].followSet[firstFollowSets[conditionalStmt].followCount++] = TK_WRITE;
+    firstFollowSets[conditionalStmt].followSet[firstFollowSets[conditionalStmt].followCount++] = TK_SQL;
+    firstFollowSets[conditionalStmt].followSet[firstFollowSets[conditionalStmt].followCount++] = TK_WHILE;
+    firstFollowSets[conditionalStmt].followSet[firstFollowSets[conditionalStmt].followCount++] = TK_ELSE;
+    firstFollowSets[conditionalStmt].followSet[firstFollowSets[conditionalStmt].followCount++] = TK_ENDWHILE;
+    firstFollowSets[conditionalStmt].followSet[firstFollowSets[conditionalStmt].followCount++] = TK_IF;
+    firstFollowSets[conditionalStmt].followSet[firstFollowSets[conditionalStmt].followCount++] = TK_READ;
+    firstFollowSets[conditionalStmt].followSet[firstFollowSets[conditionalStmt].followCount++] = TK_CALL;
+    firstFollowSets[conditionalStmt].followSet[firstFollowSets[conditionalStmt].followCount++] = TK_RETURN;
+    firstFollowSets[conditionalStmt].followSet[firstFollowSets[conditionalStmt].followCount++] = TK_ID;
+    firstFollowSets[conditionalStmt].followSet[firstFollowSets[conditionalStmt].followCount++] = TK_ENDIF;
+    firstFollowSets[elsePart].followSet[firstFollowSets[elsePart].followCount++] = TK_WRITE;
+    firstFollowSets[elsePart].followSet[firstFollowSets[elsePart].followCount++] = TK_SQL;
+    firstFollowSets[elsePart].followSet[firstFollowSets[elsePart].followCount++] = TK_WHILE;
+    firstFollowSets[elsePart].followSet[firstFollowSets[elsePart].followCount++] = TK_ELSE;
+    firstFollowSets[elsePart].followSet[firstFollowSets[elsePart].followCount++] = TK_ENDWHILE;
+    firstFollowSets[elsePart].followSet[firstFollowSets[elsePart].followCount++] = TK_IF;
+    firstFollowSets[elsePart].followSet[firstFollowSets[elsePart].followCount++] = TK_READ;
+    firstFollowSets[elsePart].followSet[firstFollowSets[elsePart].followCount++] = TK_CALL;
+    firstFollowSets[elsePart].followSet[firstFollowSets[elsePart].followCount++] = TK_RETURN;
+    firstFollowSets[elsePart].followSet[firstFollowSets[elsePart].followCount++] = TK_ID;
+    firstFollowSets[elsePart].followSet[firstFollowSets[elsePart].followCount++] = TK_ENDIF;
+    firstFollowSets[ioStmt].followSet[firstFollowSets[ioStmt].followCount++] = TK_WRITE;
+    firstFollowSets[ioStmt].followSet[firstFollowSets[ioStmt].followCount++] = TK_SQL;
+    firstFollowSets[ioStmt].followSet[firstFollowSets[ioStmt].followCount++] = TK_WHILE;
+    firstFollowSets[ioStmt].followSet[firstFollowSets[ioStmt].followCount++] = TK_ELSE;
+    firstFollowSets[ioStmt].followSet[firstFollowSets[ioStmt].followCount++] = TK_ENDWHILE;
+    firstFollowSets[ioStmt].followSet[firstFollowSets[ioStmt].followCount++] = TK_IF;
+    firstFollowSets[ioStmt].followSet[firstFollowSets[ioStmt].followCount++] = TK_READ;
+    firstFollowSets[ioStmt].followSet[firstFollowSets[ioStmt].followCount++] = TK_CALL;
+    firstFollowSets[ioStmt].followSet[firstFollowSets[ioStmt].followCount++] = TK_RETURN;
+    firstFollowSets[ioStmt].followSet[firstFollowSets[ioStmt].followCount++] = TK_ID;
+    firstFollowSets[ioStmt].followSet[firstFollowSets[ioStmt].followCount++] = TK_ENDIF;
+    firstFollowSets[arithmeticExpression].followSet[firstFollowSets[arithmeticExpression].followCount++] = TK_CL;
+    firstFollowSets[arithmeticExpression].followSet[firstFollowSets[arithmeticExpression].followCount++] = TK_SEM;
+    firstFollowSets[expPrime].followSet[firstFollowSets[expPrime].followCount++] = TK_CL;
+    firstFollowSets[expPrime].followSet[firstFollowSets[expPrime].followCount++] = TK_SEM;
+    firstFollowSets[term].followSet[firstFollowSets[term].followCount++] = TK_CL;
+    firstFollowSets[term].followSet[firstFollowSets[term].followCount++] = TK_PLUS;
+    firstFollowSets[term].followSet[firstFollowSets[term].followCount++] = TK_SEM;
+    firstFollowSets[term].followSet[firstFollowSets[term].followCount++] = TK_MINUS;
+    firstFollowSets[termPrime].followSet[firstFollowSets[termPrime].followCount++] = TK_CL;
+    firstFollowSets[termPrime].followSet[firstFollowSets[termPrime].followCount++] = TK_PLUS;
+    firstFollowSets[termPrime].followSet[firstFollowSets[termPrime].followCount++] = TK_SEM;
+    firstFollowSets[termPrime].followSet[firstFollowSets[termPrime].followCount++] = TK_MINUS;
+    firstFollowSets[factor].followSet[firstFollowSets[factor].followCount++] = TK_MUL;
+    firstFollowSets[factor].followSet[firstFollowSets[factor].followCount++] = TK_SEM;
+    firstFollowSets[factor].followSet[firstFollowSets[factor].followCount++] = TK_DIV;
+    firstFollowSets[factor].followSet[firstFollowSets[factor].followCount++] = TK_CL;
+    firstFollowSets[factor].followSet[firstFollowSets[factor].followCount++] = TK_PLUS;
+    firstFollowSets[factor].followSet[firstFollowSets[factor].followCount++] = TK_MINUS;
+    firstFollowSets[highPrecedenceOperators].followSet[firstFollowSets[highPrecedenceOperators].followCount++] = TK_RNUM;
+    firstFollowSets[highPrecedenceOperators].followSet[firstFollowSets[highPrecedenceOperators].followCount++] = TK_OP;
+    firstFollowSets[highPrecedenceOperators].followSet[firstFollowSets[highPrecedenceOperators].followCount++] = TK_ID;
+    firstFollowSets[highPrecedenceOperators].followSet[firstFollowSets[highPrecedenceOperators].followCount++] = TK_NUM;
+    firstFollowSets[lowPrecedenceOperators].followSet[firstFollowSets[lowPrecedenceOperators].followCount++] = TK_RNUM;
+    firstFollowSets[lowPrecedenceOperators].followSet[firstFollowSets[lowPrecedenceOperators].followCount++] = TK_OP;
+    firstFollowSets[lowPrecedenceOperators].followSet[firstFollowSets[lowPrecedenceOperators].followCount++] = TK_ID;
+    firstFollowSets[lowPrecedenceOperators].followSet[firstFollowSets[lowPrecedenceOperators].followCount++] = TK_NUM;
+    firstFollowSets[booleanExpression].followSet[firstFollowSets[booleanExpression].followCount++] = TK_CL;
+    firstFollowSets[var].followSet[firstFollowSets[var].followCount++] = TK_GT;
+    firstFollowSets[var].followSet[firstFollowSets[var].followCount++] = TK_MUL;
+    firstFollowSets[var].followSet[firstFollowSets[var].followCount++] = TK_GE;
+    firstFollowSets[var].followSet[firstFollowSets[var].followCount++] = TK_SEM;
+    firstFollowSets[var].followSet[firstFollowSets[var].followCount++] = TK_NE;
+    firstFollowSets[var].followSet[firstFollowSets[var].followCount++] = TK_DIV;
+    firstFollowSets[var].followSet[firstFollowSets[var].followCount++] = TK_EQ;
+    firstFollowSets[var].followSet[firstFollowSets[var].followCount++] = TK_LT;
+    firstFollowSets[var].followSet[firstFollowSets[var].followCount++] = TK_CL;
+    firstFollowSets[var].followSet[firstFollowSets[var].followCount++] = TK_PLUS;
+    firstFollowSets[var].followSet[firstFollowSets[var].followCount++] = TK_LE;
+    firstFollowSets[var].followSet[firstFollowSets[var].followCount++] = TK_MINUS;
+    firstFollowSets[logicalOp].followSet[firstFollowSets[logicalOp].followCount++] = TK_OP;
+    firstFollowSets[relationalOp].followSet[firstFollowSets[relationalOp].followCount++] = TK_RNUM;
+    firstFollowSets[relationalOp].followSet[firstFollowSets[relationalOp].followCount++] = TK_NUM;
+    firstFollowSets[relationalOp].followSet[firstFollowSets[relationalOp].followCount++] = TK_ID;
+    firstFollowSets[returnStmt].followSet[firstFollowSets[returnStmt].followCount++] = TK_END;
+    firstFollowSets[optionalReturn].followSet[firstFollowSets[optionalReturn].followCount++] = TK_SEM;
+    firstFollowSets[idList].followSet[firstFollowSets[idList].followCount++] = TK_SQR;
+    firstFollowSets[more_ids].followSet[firstFollowSets[more_ids].followCount++] = TK_SQR;
+    firstFollowSets[definetypestmt].followSet[firstFollowSets[definetypestmt].followCount++] = TK_WRITE;
+    firstFollowSets[definetypestmt].followSet[firstFollowSets[definetypestmt].followCount++] = TK_DEFINETYPE;
+    firstFollowSets[definetypestmt].followSet[firstFollowSets[definetypestmt].followCount++] = TK_SQL;
+    firstFollowSets[definetypestmt].followSet[firstFollowSets[definetypestmt].followCount++] = TK_WHILE;
+    firstFollowSets[definetypestmt].followSet[firstFollowSets[definetypestmt].followCount++] = TK_UNION;
+    firstFollowSets[definetypestmt].followSet[firstFollowSets[definetypestmt].followCount++] = TK_IF;
+    firstFollowSets[definetypestmt].followSet[firstFollowSets[definetypestmt].followCount++] = TK_RECORD;
+    firstFollowSets[definetypestmt].followSet[firstFollowSets[definetypestmt].followCount++] = TK_READ;
+    firstFollowSets[definetypestmt].followSet[firstFollowSets[definetypestmt].followCount++] = TK_CALL;
+    firstFollowSets[definetypestmt].followSet[firstFollowSets[definetypestmt].followCount++] = TK_TYPE;
+    firstFollowSets[definetypestmt].followSet[firstFollowSets[definetypestmt].followCount++] = TK_RETURN;
+    firstFollowSets[definetypestmt].followSet[firstFollowSets[definetypestmt].followCount++] = TK_ID;
+    firstFollowSets[A].followSet[firstFollowSets[A].followCount++] = TK_RUID;
+    return firstFollowSets;
+}
+
+//void createParseTable(FirstFollowSet* F, ParseTable* T){
+    // T = (ParseTable*)malloc(sizeof(ParseTable));
+    // for (int i = 0; i < MAX_NON_TERMINALS; i++) {
+    //     T[i] = (GrammarRule*)malloc(sizeof(GrammarRule)*MAX_NON_TERMINALS)
+    //     for (int j = i; j < MAX_TERMINALS; j++) {
+    //         T[i][j]->rule = NULL;
+    //     }
+    // }
+    // for(int i = 0; i < grammarRuleCount; i++){
+    //     int eps_in_first = false;
+    //     for(int j = 0; j <grammarRules[i].rhsCount; j++ ){
+    //         for(int m = 0; m < F[grammarRules[i]->rhs[j]]->firstCount; m++){
+    //             tk first = F[grammarRules[i]->rhs[j]]->firstSet[m];
+    //             if(first != TK_EPS){
+    //                 T[i][j]->rule = grammarRules[i];
+    //             }
+    //             else eps_in_first = true;
+    //         }
+    //         if(eps_in_first){
+    //             for(int k = 0; k< grammarRules[i].followCount;k++){
+    //             tk follow = F[grammarRules[i].lhs]->followSet[j];
+    //             T[i][j]->rule = grammarRules[i];
+    //             }
+    //         }
+    //     }
+    // }
+    // parser.c
+void createParseTable(FirstFollowSet* F, ParseTable** T) {
+    // Allocate the ParseTable struct
+    *T = malloc(sizeof(ParseTable));
+    if (!*T) {
+        perror("Failed to allocate ParseTable");
+        exit(EXIT_FAILURE);
+    }
+
+    // Allocate 2D array of pointers
+    (*T)->rule = malloc(MAX_NON_TERMINALS * sizeof(GrammarRule**));
+    if (!(*T)->rule) {
+        free(*T);
+        perror("Failed to allocate rule array");
+        exit(EXIT_FAILURE);
+    }
+
+    // Initialize each row
+    for (int i = 0; i < MAX_NON_TERMINALS; i++) {
+        (*T)->rule[i] = calloc(MAX_TERMINALS, sizeof(GrammarRule*));
+        if (!(*T)->rule[i]) {
+            // Cleanup on failure
+            for (int j = 0; j < i; j++) free((*T)->rule[j]);
+            free((*T)->rule);
+            free(*T);
+            perror("Failed to allocate rule row");
+            exit(EXIT_FAILURE);
+        }
+    }
+
+    // Populate the table
+    for (int i = 0; i < grammarRuleCount; i++) {
+        GrammarRule* rule = &grammarRules[i];
+        NonTerminal A = rule->lhs;
+        int can_derive_epsilon = 1;
+
+        for (int j = 0; j < rule->rhsCount; j++) {
+            Token symbol = rule->rhs[j];
+            
+            if (symbol.isTerminal) {
+                if (symbol.tk.t != TK_EPS) {
+                    (*T)->rule[A][symbol.tk.t] = rule;  // Assign pointer
+                }
+                can_derive_epsilon = 0;
+                break;
+            } else {
+                NonTerminal B = symbol.tk.n;
+                can_derive_epsilon = 0;
+                
+                for (int k = 0; k < F[B].firstCount; k++) {
+                    tk term = F[B].firstSet[k];
+                    if (term != TK_EPS) {
+                        (*T)->rule[A][term] = rule;  // Assign pointer
+                    } else {
+                        can_derive_epsilon = 1;
+                    }
+                }
+                
+                if (!containsEpsilon(F[B].firstSet, F[B].firstCount)) {
+                    can_derive_epsilon = 0;
+                    break;
+                }
+            }
+        }
+
+        if (can_derive_epsilon) {
+            for (int j = 0; j < F[A].followCount; j++) {
+                tk term = F[A].followSet[j];
+                (*T)->rule[A][term] = rule;  // Assign pointer
+>>>>>>> Stashed changes
             }
         }
     }
 }
+<<<<<<< Updated upstream
+=======
+    
+    void freeParseTable(ParseTable* T) {
+        if (!T) return;
+        
+        for (int i = 0; i < MAX_NON_TERMINALS; i++) {
+            free(T->rule[i]);
+        }
+        free(T->rule);
+        free(T);
+    }
+    int containsEpsilon(tk* firstSet, int count) {
+        for (int i = 0; i < count; i++) {
+            if (firstSet[i] == TK_EPS) return 1;
+        }
+        return 0;
+    }
+
+    void printParseTable(ParseTable* T, const char** nonTerminalNames, const char** terminalNames) {
+        printf("\nParse Table:\n");
+        printf("====================================================================\n");
+        
+        for (int nt = 0; nt < MAX_NON_TERMINALS; nt++) {
+            printf("%-20s | ", nonTerminalNames[nt]);
+            
+            for (int t = 0; t < MAX_TERMINALS; t++) {
+                if (T->rule[nt][t] != NULL) {
+                    GrammarRule* rule = T->rule[nt][t];
+                    
+                    // Print terminal name and rule number
+                    printf("%s: %d\t", terminalNames[t], rule->ruleNumber);
+                }
+            }
+            printf("\n");
+        }
+        printf("====================================================================\n");
+    }
+>>>>>>> Stashed changes
 
 int main() {
 
     printf("hello testing");
+<<<<<<< Updated upstream
     int grammarRulkCount = 0;
     //storeGrammarRules(); // Ensure this function is called to populate the grammarRules
     int nonTerminalCount = 0;
@@ -1133,5 +1946,15 @@ int main() {
     printf("nt = %d\n", T[23].nt);
     printf("t = %d\n", T[45].t);
     // Free allocated memory here if needed
+=======
+    firstFollowSets = computeFirstFollowSets();
+    printf("\nPrinting FIRST sets:\n");
+    printf("===================\n");
+    //printFirstSets();
+    storeGrammarRules(); 
+    //printGrammarRules();
+   createParseTable(firstFollowSets, &parseTable);
+   printParseTable(parseTable, nonTerminalNames, terminalNames); 
+>>>>>>> Stashed changes
     return 0;
 }

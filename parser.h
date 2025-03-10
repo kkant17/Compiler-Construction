@@ -87,12 +87,25 @@ typedef struct {
 
 // Define a structure for storing the parse table cells
 typedef struct{
+<<<<<<< Updated upstream
     GrammarRule** rule;
+=======
+    GrammarRule*** rule;
+>>>>>>> Stashed changes
 }ParseTable;
 
 // Function prototypes
 void storeGrammarRules();
+<<<<<<< Updated upstream
 FirstFollowSet* storeFirstFollowSets();
 FirstFollowSet* ComputeFirstFollowSets()
 void createParseTable(FirstFollowSet* F, ParseTable* T)
 #endif
+=======
+FirstFollowSet* computeFirstFollowSets();
+void createParseTable(FirstFollowSet* F, ParseTable** T);
+void freeParseTable(ParseTable* T);
+int containsEpsilon(tk* firstSet, int count);
+
+#endif
+>>>>>>> Stashed changes
