@@ -1,21 +1,22 @@
 #include "parser.h"
-#include <errno.h>
-#include <ctype.h>
+//#include <errno.h>
+//#include <ctype.h>
 #include <string.h>
+#include <stdbool.h>
 #define NUMGRAMMAR 95
 #define MAX_LINE_LENGTH 1024
 #define MAX_TERMINALS 56
 #define MAX_NONTERMINALS 52
 // Array to store grammar rules
 GrammarRule *grammarRules;
-int grammarRuleCount = 0;
+int grammarRuleCount;
 
 // Array to store FIRST and FOLLOW sets
 FirstFollowSet *firstFollowSets;
-int nonTerminalCount = 0;
+int nonTerminalCount;
 
 // Array to store the parse table
-ParseTableCell *parseTable;
+ParseTable *parseTable;
 
 void storeGrammarRules() {
     FILE *file = fopen("updated_rules.txt", "r");
@@ -689,7 +690,7 @@ void storeGrammarRules() {
 FirstFollowSet* ComputeFirstFollowSets() {
     FILE *file = fopen("grammar.txt", "r");
     if (!file) {
-        perror("Error opening grammar.txt");
+        printf("Error opening grammar.txt");
         exit(EXIT_FAILURE);
     }
 
@@ -1075,34 +1076,26 @@ FirstFollowSet* ComputeFirstFollowSets() {
     return firstFollowSets;
 }
 
-void createParseTable(FirstFollowSet* F, ParseTableCell* T){
-    T = (ParseTableCell*)malloc(sizeof(ParseTableCell) * MAX_NONTERMINALS * MAX_TERMINALS);
+void createParseTable(FirstFollowSet* F, ParseTable* T){
+    T = (ParseTable*)malloc(sizeof(ParseTable));
     for (int i = 0; i < MAX_NONTERMINALS; i++) {
+        T[i] = (GrammarRule*)malloc(sizeof(GrammarRule) * MAX_TERMINALS);
         for (int j = i; j < MAX_TERMINALS; j++) {
-            T[j].t = j;
-            T[j].nt = i;
-            T[j]->rule = NULL;
+            T[i][j]->rule = NULL;
         }
     }
     for(int i = 0; i < grammarRuleCount; i++){
+        eps_in_first = false;
         for(int j = 0; j <grammarRules[i].rhsCount; j++ ){
             for(int m = 0; m < F[grammarRules[i]->rhs[j]]->firstCount; m++){
                 tk first = F[grammarRules[i]->rhs[j]]->firstSet[m];
                 if(first != TK_EPS){
-                    for (int k = 0; k < MAX_NONTERMINALS; k++) {
-                        if (T[k].nt ==grammarRules[i].lhs){
-                        for (int l = k; l < MAX_TERMINALS; l++) {
-                            if(T[l].t == first){
-                                T[l]->rule = grammarRules[i]
-                                break;
-                            }
-                        }
-                        break;
-                        }
-                    }
-                    break;
+                    T[grammarRules[i]->lhs][grammarRules[i]->rhs[j]] = grammarRules[i];
                 }
-            else if(j == grammarRules[i].rhsCount - 1){
+                else{
+                    eps_in_first = true;
+                }
+            /*else{
                 for(int k = 0; k< grammarRules[i].followCount;k++){
                tk follow = F[grammarRules[i].lhs]->followSet[j];
                for (int l = 0; l < MAX_NONTERMINALS; i++) {
@@ -1118,7 +1111,13 @@ void createParseTable(FirstFollowSet* F, ParseTableCell* T){
             }
 
             }
-        }
+        }*/
+            }
+            if (eps_in_first){
+                for(int k = 0; k< grammarRules[i].followCount;k++){
+                    tk follow = F[grammarRules[i].lhs]->followSet[j];
+                   T[grammarRules[i]->lhs][follow] = grammarRules[i];
+                }
             }
         }
     }
@@ -1127,7 +1126,9 @@ void createParseTable(FirstFollowSet* F, ParseTableCell* T){
 int main() {
 
     printf("hello testing");
+    int grammarRulkCount = 0;
     //storeGrammarRules(); // Ensure this function is called to populate the grammarRules
+    int nonTerminalCount = 0;
     //printGrammarRules(); // Call the function to print the rules
     printf("nt = %d\n", T[23].nt);
     printf("t = %d\n", T[45].t);

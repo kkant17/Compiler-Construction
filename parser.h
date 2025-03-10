@@ -87,14 +87,12 @@ typedef struct {
 
 // Define a structure for storing the parse table cells
 typedef struct{
-    GrammarRule* rule;
-    NonTerminal nt;
-    tk t;
-}ParseTableCell;
+    GrammarRule** rule;
+}ParseTable;
 
 // Function prototypes
 void storeGrammarRules();
 FirstFollowSet* storeFirstFollowSets();
 FirstFollowSet* ComputeFirstFollowSets()
-void createParseTable(FirstFollowSet* F, ParseTableCell* T)
+void createParseTable(FirstFollowSet* F, ParseTable* T)
 #endif
