@@ -1,29 +1,20 @@
 #include "parser.h"
-//#include <errno.h>
-//#include <ctype.h>
+#include <errno.h>
+#include <ctype.h>
 #include <string.h>
 #include <stdbool.h>
 #define NUMGRAMMAR 95
 #define MAX_LINE_LENGTH 1024
-<<<<<<< Updated upstream
-#define MAX_TERMINALS 56
-#define MAX_NONTERMINALS 52
-=======
 #define MAX_TERMINALS 58
 #define MAX_NON_TERMINALS 53
->>>>>>> Stashed changes
+
 // Array to store grammar rules
 GrammarRule *grammarRules;
 int grammarRuleCount;
 
 // Array to store FIRST and FOLLOW sets
 FirstFollowSet *firstFollowSets;
-<<<<<<< Updated upstream
-int nonTerminalCount;
 
-// Array to store the parse table
-ParseTable *parseTable;
-=======
 int nonTerminalCount = 0;
 
 ParseTable *parseTable = NULL;
@@ -146,7 +137,6 @@ const char* terminalNames[MAX_TERMINALS] = {
     "TK_EPS",
     "TK_DOLLAR"
 };
->>>>>>> Stashed changes
 
 void storeGrammarRules() {
     FILE *file = fopen("updated_rules.txt", "r");
@@ -167,10 +157,8 @@ void storeGrammarRules() {
 
     while (fgets(line, sizeof(line), file)) {
 
-        printf("Processing line: %s\n", line);
-        /*char *lhsToken = strtok(line, " ");
-        char *rhsToken = strtok(NULL, " ");
-        printf("LHS: %s, RHS: %s\n", lhsToken, rhsToken);*/
+        //printf("Processing line: %s\n", line);
+
         char *lhsToken = strtok(line, " ");
         char *rhsToken = strtok(NULL, "===");
 
@@ -182,19 +170,10 @@ void storeGrammarRules() {
             *(end + 1) = '\0';
         }
 
-        /*if (rhsToken) {
-            // Trim leading and trailing spaces from rhsToken
-            while (isspace((unsigned char)*rhsToken)) rhsToken++;
-            char *end = rhsToken + strlen(rhsToken) - 1;
-            while (end > rhsToken && isspace((unsigned char)*end)) end--;
-            *(end + 1) = '\0';
-        }*/
-
-        printf("LHS: %s, RHS: %s\n", lhsToken, rhsToken);
+        //printf("LHS: %s, RHS: %s\n", lhsToken, rhsToken);
 
         if (lhsToken && rhsToken) {
             NonTerminal lhs;
-            printf("lhsToken: %s\n", lhsToken);
             if (strcmp(lhsToken, "<program>") == 0) {
                 lhs = program;
             }
@@ -361,7 +340,10 @@ void storeGrammarRules() {
             char *rhs = strtok(rhsToken, " ");
             int rhsCount = 0;
             while (rhs) {
-                printf("rhs: %s\n", rhs);
+                size_t len = strlen(rhs);
+                while (len > 0 && (rhs[len - 1] == '\n' || rhs[len - 1] == '\r' || rhs[len - 1] == ' ')) {
+                    rhs[--len] = '\0';
+                }
                 Token *newRhs = realloc(grammarRules[ruleNumber].rhs, sizeof(Token) * (rhsCount + 1));
                 if (!newRhs) {
                     perror("Memory allocation failed for RHS tokens");
@@ -371,7 +353,15 @@ void storeGrammarRules() {
                 }
                 grammarRules[ruleNumber].rhs = newRhs;
 
-                if (strcmp(rhs, "<otherFunctions>") == 0) {
+                if (strcmp(rhs, "<program>") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = program;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 0;
+                }
+                else if (strcmp(rhs, "<mainFunction>") == 0) {
+                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = mainFunction;
+                    grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 0;
+                }
+                else if (strcmp(rhs, "<otherFunctions>") == 0) {
                     grammarRules[ruleNumber].rhs[rhsCount].tk.n = otherFunctions;
                     grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 0;
                 }
@@ -800,11 +790,7 @@ void storeGrammarRules() {
                     grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
                 }
                 else if (strcmp(rhs,"eps") == 0) {
-<<<<<<< Updated upstream
-                    grammarRules[ruleNumber].rhs[rhsCount].tk.n = eps;
-=======
                     grammarRules[ruleNumber].rhs[rhsCount].tk.t = TK_EPS;
->>>>>>> Stashed changes
                     grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
                 }
                 rhsCount++;
@@ -821,94 +807,27 @@ void storeGrammarRules() {
 }
 
 
-FirstFollowSet* ComputeFirstFollowSets() {
-    FILE *file = fopen("grammar.txt", "r");
-    if (!file) {
-        printf("Error opening grammar.txt");
-        exit(EXIT_FAILURE);
+
+void printGrammarRules() {
+    for (int i = 0; i < grammarRuleCount; i++) {
+        printf("Rule %d: ", grammarRules[i].ruleNumber);
+        printf("<%d> ===> ", grammarRules[i].lhs); 
+
+        for (int j = 0; j < grammarRules[i].rhsCount; j++) {
+            if (grammarRules[i].rhs[j].isTerminal) {
+                printf("TK_%d ", grammarRules[i].rhs[j].tk.t); // Print terminal token
+            } else {
+                printf("<%d> ", grammarRules[i].rhs[j].tk.n); // Print non-terminal
+            }
+        }
+        printf("\n");
     }
-
-<<<<<<< Updated upstream
-    // Allocate memory for firstFollowSets based on the number of non-terminals
-=======
-    // Array of non-terminal names for prettier printing
-    const char* nonTerminalNames[] = {
-        "program", "mainFunction", "otherFunctions", "function", 
-        "input_par", "output_par", "parameter_list", "dataType",
-        "primitiveDatatype", "constructedDatatype", "remaining_list",
-        "stmts", "typeDefinitions", "actualOrRedefined", "typeDefinition",
-        "fieldDefinitions", "fieldDefinition", "fieldType", "moreFields",
-        "declarations", "declaration", "global_or_not", "otherStmts",
-        "stmt", "assignmentStmt", "oneExpansion", "moreExpansions",
-        "singleOrRecId", "option_single_constructed", "funCallStmt",
-        "outputParameters", "inputParameters", "iterativeStmt",
-        "conditionalStmt", "elsePart", "ioStmt", "arithmeticExpression",
-        "expPrime", "term", "termPrime", "factor", "highPrecedenceOperators",
-        "lowPrecedenceOperators", "booleanExpression", "var", "logicalOp",
-        "relationalOp", "returnStmt", "optionalReturn", "idList",
-        "more_ids", "definetypestmt", "A"
-    };
-
-    // Array of terminal names for prettier printing
-    const char* terminalNames[] = {
-       "TK_ASSIGNOP",
-"TK_FIELDID",
-"TK_ID",
-"TK_NUM",
-"TK_RNUM",
-"TK_FUNID",
-"TK_RUID",
-"TK_WITH",
-"TK_PARAMETERS",
-"TK_END",
-"TK_WHILE",
-"TK_UNION",
-"TK_ENDUNION",
-"TK_DEFINETYPE",
-"TK_AS",
-"TK_TYPE",
-"TK_MAIN",
-"TK_GLOBAL",
-"TK_PARAMETER",
-"TK_LIST",
-"TK_SQL",
-"TK_SQR",
-"TK_INPUT",
-"TK_OUTPUT",
-"TK_INT",
-"TK_REAL",
-"TK_COMMA",
-"TK_SEM",
-"TK_COLON",
-"TK_DOT",
-"TK_ENDWHILE",
-"TK_OP",
-"TK_CL",
-"TK_IF",
-"TK_THEN",
-"TK_ENDIF",
-"TK_READ",
-"TK_WRITE",
-"TK_RETURN",
-"TK_PLUS",
-"TK_MINUS",
-"TK_MUL",
-"TK_DIV",
-"TK_CALL",
-"TK_RECORD",
-"TK_ENDRECORD",
-"TK_ELSE",
-"TK_AND",
-"TK_OR",
-"TK_NOT",
-"TK_LT",
-"TK_LE",
-"TK_EQ",
-"TK_GT",
-"TK_GE",
-"TK_NE",
-"eps"
-    };
+}
+void printFirstSets() {
+    if (!firstFollowSets) {
+        printf("First sets not initialized!\n");
+        return;
+    }
 
     for (int i = 0; i < MAX_NON_TERMINALS; i++) {
         printf("FIRST(%s): { ", nonTerminalNames[i]);
@@ -949,433 +868,16 @@ FirstFollowSet* ComputeFirstFollowSets() {
     }
 }
 
-FirstFollowSet* computeFirstFollowSets() {
->>>>>>> Stashed changes
+FirstFollowSet* ComputeFirstFollowSets() {
     firstFollowSets = malloc(sizeof(FirstFollowSet) * NUMGRAMMAR);
 
-    char line[MAX_LINE_LENGTH];
-    FirstFollowSet *currentSet = NULL;
-    NonTerminal currentNonTerminal;
-    int isFirstSet = 1; // Flag to determine if we're reading FIRST or FOLLOW sets
-
-    while (fgets(line, sizeof(line), file)) {
-        // Check if the line indicates a switch between FIRST and FOLLOW sets
-        if (strstr(line, "FIRST sets:")) {
-            isFirstSet = 1;
-            continue;
-        } else if (strstr(line, "FOLLOW sets:")) {
-            isFirstSet = 0;
-            continue;
-        }
-
-        // Parse the non-terminal and its set
-        char *token = strtok(line, ":");
-        if (token) {
-            // Map the non-terminal string to the enum value
-            if (strcmp(token, "<program>") == 0) {
-                currentNonTerminal = program;
-            }
-            else if (strcmp(token, "<mainFunction>") == 0) {
-                currentNonTerminal = mainFunction;
-            }
-            else if (strcmp(token, "<otherFunctions>") == 0) {
-                currentNonTerminal = otherFunctions;
-            }
-            else if (strcmp(token, "<function>") == 0) {
-                currentNonTerminal = function;
-            }
-            else if (strcmp(token, "<input_par>") == 0) {
-                currentNonTerminal = input_par;
-            }
-            else if (strcmp(token, "<output_par>") == 0) {
-                currentNonTerminal = output_par;
-            }
-            else if (strcmp(token, "<parameter_list>") == 0) {
-                currentNonTerminal = parameter_list;
-            }
-            else if (strcmp(token, "<dataType>") == 0) {
-                currentNonTerminal = dataType;
-            }
-            else if (strcmp(token, "<primitiveDatatype>") == 0) {
-                currentNonTerminal = primitiveDatatype;
-            }
-            else if (strcmp(token, "<constructedDatatype>") == 0) {
-                currentNonTerminal = constructedDatatype;
-            }
-            else if (strcmp(token, "<remaining_list>") == 0) {
-                currentNonTerminal = remaining_list;
-            }
-            else if (strcmp(token, "<stmts>") == 0) {
-                currentNonTerminal = stmts;
-            }
-            else if (strcmp(token, "<typeDefinitions>") == 0) {
-                currentNonTerminal = typeDefinitions;
-            }
-            else if (strcmp(token, "<actualOrRedefined>") == 0) {
-                currentNonTerminal = actualOrRedefined;
-            }
-            else if (strcmp(token, "<typeDefinition>") == 0) {
-                currentNonTerminal = typeDefinition;
-            }
-            else if (strcmp(token, "<fieldDefinitions>") == 0) {
-                currentNonTerminal = fieldDefinitions;
-            }
-            else if (strcmp(token, "<fieldDefinition>") == 0) {
-                currentNonTerminal = fieldDefinition;
-            }
-            else if (strcmp(token, "<fieldType>") == 0) {
-                currentNonTerminal = fieldType;
-            }
-            else if (strcmp(token, "<moreFields>") == 0) {
-                currentNonTerminal = moreFields;
-            }
-            else if (strcmp(token, "<declarations>") == 0) {
-                currentNonTerminal = declarations;
-            }
-            else if (strcmp(token, "<declaration>") == 0) {
-                currentNonTerminal = declaration;
-            }
-            else if (strcmp(token, "<global_or_not>") == 0) {
-                currentNonTerminal = global_or_not;
-            }
-            else if (strcmp(token, "<otherStmts>") == 0) {
-                currentNonTerminal = otherStmts;
-            }
-            else if (strcmp(token, "<stmt>") == 0) {
-                currentNonTerminal = stmt;
-            }
-            else if (strcmp(token, "<assignmentStmt>") == 0) {
-                currentNonTerminal = assignmentStmt;
-            }
-            else if (strcmp(token, "<oneExpansion>") == 0) {
-                currentNonTerminal = oneExpansion;
-            }
-            else if (strcmp(token, "<moreExpansions>") == 0) {
-                currentNonTerminal = moreExpansions;
-            }
-            else if (strcmp(token, "<singleOrRecId>") == 0) {
-                currentNonTerminal = singleOrRecId;
-            }
-            else if (strcmp(token, "<option_single_constructed>") == 0) {
-                currentNonTerminal = option_single_constructed;
-            }
-            else if (strcmp(token, "<funCallStmt>") == 0) {
-                currentNonTerminal = funCallStmt;
-            }
-            else if (strcmp(token, "<outputParameters>") == 0) {
-                currentNonTerminal = outputParameters;
-            }
-            else if (strcmp(token, "<inputParameters>") == 0) {
-                currentNonTerminal = inputParameters;
-            }
-            else if (strcmp(token, "<iterativeStmt>") == 0) {
-                currentNonTerminal = iterativeStmt;
-            }
-            else if (strcmp(token, "<conditionalStmt>") == 0) {
-                currentNonTerminal = conditionalStmt;
-            }
-            else if (strcmp(token, "<elsePart>") == 0) {
-                currentNonTerminal = elsePart;
-            }
-            else if (strcmp(token, "<ioStmt>") == 0) {
-                currentNonTerminal = ioStmt;
-            }
-            else if (strcmp(token, "<arithmeticExpression>") == 0) {
-                currentNonTerminal = arithmeticExpression;
-            }
-            else if (strcmp(token, "<expPrime>") == 0) {
-                currentNonTerminal = expPrime;
-            }
-            else if (strcmp(token, "<term>") == 0) {
-                currentNonTerminal = term;
-            }
-            else if (strcmp(token, "<termPrime>") == 0) {
-                currentNonTerminal = termPrime;
-            }
-            else if (strcmp(token, "<factor>") == 0) {
-                currentNonTerminal = factor;
-            }
-            else if (strcmp(token, "<highPrecedenceOperators>") == 0) {
-                currentNonTerminal = highPrecedenceOperators;
-            }
-            else if (strcmp(token, "<lowPrecedenceOperators>") == 0) {
-                currentNonTerminal = lowPrecedenceOperators;
-            }
-            else if (strcmp(token, "<booleanExpression>") == 0) {
-                currentNonTerminal = booleanExpression;
-            }
-            else if (strcmp(token, "<var>") == 0) {
-                currentNonTerminal = var;
-            }
-            else if (strcmp(token, "<logicalOp>") == 0) {
-                currentNonTerminal = logicalOp;
-            }
-            else if (strcmp(token, "<relationalOp>") == 0) {
-                currentNonTerminal = relationalOp;
-            }
-            else if (strcmp(token, "<returnStmt>") == 0) {
-                currentNonTerminal = returnStmt;
-            }
-            else if (strcmp(token, "<optionalReturn>") == 0) {
-                currentNonTerminal = optionalReturn;
-            }
-            else if (strcmp(token, "<idList>") == 0) {
-                currentNonTerminal = idList;
-            }
-            else if (strcmp(token, "<more_ids>") == 0) {
-                currentNonTerminal = more_ids;
-            }
-            else if (strcmp(token, "<definetypestmt>") == 0) {
-                currentNonTerminal = definetypestmt;
-            }
-            else if (strcmp(token, "<A>") == 0) {
-                currentNonTerminal = A;
-            }
-
-            // Allocate memory for the current non-terminal's FIRST/FOLLOW set
-            currentSet = &firstFollowSets[currentNonTerminal];
-            currentSet->firstSet = malloc(sizeof(tk) * MAX_TERMINALS);
-            currentSet->followSet = malloc(sizeof(tk) * MAX_TERMINALS);
-            currentSet->firstCount = 0;
-            currentSet->followCount = 0;
-
-            // Parse the set of terminals
-            token = strtok(NULL, "{}, ");
-            while (token) {
-                tk terminal;
-                // Map the terminal string to the enum value
-                if (strcmp(token, "TK_ASSIGNOP") == 0) {
-                    terminal = TK_ASSIGNOP;
-                }
-                else if (strcmp(token, "TK_FIELDID") == 0) {
-                    terminal = TK_FIELDID;
-                }
-                else if (strcmp(token, "TK_ID") == 0) {
-                    terminal = TK_ID;
-                }
-                else if (strcmp(token, "TK_NUM") == 0) {
-                    terminal = TK_NUM;
-                }
-                else if (strcmp(token, "TK_RNUM") == 0) {
-                    terminal = TK_RNUM;
-                }
-                else if (strcmp(token, "TK_FUNID") == 0) {
-                    terminal = TK_FUNID;
-                }
-                else if (strcmp(token, "TK_RUID") == 0) {
-                    terminal = TK_RUID;
-                }
-                else if (strcmp(token, "TK_WITH") == 0) {
-                    terminal = TK_WITH;
-                }
-                else if (strcmp(token, "TK_PARAMETERS") == 0) {
-                    terminal = TK_PARAMETERS;
-                }
-                else if (strcmp(token, "TK_END") == 0) {
-                    terminal = TK_END;
-                }
-                else if (strcmp(token, "TK_WHILE") == 0) {
-                    terminal = TK_WHILE;
-                }
-                else if (strcmp(token, "TK_UNION") == 0) {
-                    terminal = TK_UNION;
-                }
-                else if (strcmp(token, "TK_ENDUNION") == 0) {
-                    terminal = TK_ENDUNION;
-                }
-                else if (strcmp(token, "TK_DEFINETYPE") == 0) {
-                    terminal = TK_DEFINETYPE;
-                }
-                else if (strcmp(token, "TK_AS") == 0) {
-                    terminal = TK_AS;
-                }
-                else if (strcmp(token, "TK_TYPE") == 0) {
-                    terminal = TK_TYPE;
-                }
-                else if (strcmp(token, "TK_MAIN") == 0) {
-                    terminal = TK_MAIN;
-                }
-                else if (strcmp(token, "TK_GLOBAL") == 0) {
-                    terminal = TK_GLOBAL;
-                }
-                else if (strcmp(token, "TK_PARAMETER") == 0) {
-                    terminal = TK_PARAMETER;
-                }
-                else if (strcmp(token, "TK_LIST") == 0) {
-                    terminal = TK_LIST;
-                }
-                else if (strcmp(token, "TK_SQL") == 0) {
-                    terminal = TK_SQL;
-                }
-                else if (strcmp(token, "TK_SQR") == 0) {
-                    terminal = TK_SQR;
-                }
-                else if (strcmp(token, "TK_INPUT") == 0) {
-                    terminal = TK_INPUT;
-                }
-                else if (strcmp(token, "TK_OUTPUT") == 0) {
-                    terminal = TK_OUTPUT;
-                }
-                else if (strcmp(token, "TK_INT") == 0) {
-                    terminal = TK_INT;
-                }
-                else if (strcmp(token, "TK_REAL") == 0) {
-                    terminal = TK_REAL;
-                }
-                else if (strcmp(token, "TK_COMMA") == 0) {
-                    terminal = TK_COMMA;
-                }
-                else if (strcmp(token, "TK_SEM") == 0) {
-                    terminal = TK_SEM;
-                }
-                else if (strcmp(token, "TK_COLON") == 0) {
-                    terminal = TK_COLON;
-                }
-                else if (strcmp(token, "TK_DOT") == 0) {
-                    terminal = TK_DOT;
-                }
-                else if (strcmp(token, "TK_ENDWHILE") == 0) {
-                    terminal = TK_ENDWHILE;
-                }
-                else if (strcmp(token, "TK_OP") == 0) {
-                    terminal = TK_OP;
-                }
-                else if (strcmp(token, "TK_CL") == 0) {
-                    terminal = TK_CL;
-                }
-                else if (strcmp(token, "TK_IF") == 0) {
-                    terminal = TK_IF;
-                }
-                else if (strcmp(token, "TK_THEN") == 0) {
-                    terminal = TK_THEN;
-                }
-                else if (strcmp(token, "TK_ENDIF") == 0) {
-                    terminal = TK_ENDIF;
-                }
-                else if (strcmp(token, "TK_READ") == 0) {
-                    terminal = TK_READ;
-                }
-                else if (strcmp(token, "TK_WRITE") == 0) {
-                    terminal = TK_WRITE;
-                }
-                else if (strcmp(token, "TK_RETURN") == 0) {
-                    terminal = TK_RETURN;
-                }
-                else if (strcmp(token, "TK_PLUS") == 0) {
-                    terminal = TK_PLUS;
-                }
-                else if (strcmp(token, "TK_MINUS") == 0) {
-                    terminal = TK_MINUS;
-                }
-                else if (strcmp(token, "TK_MUL") == 0) {
-                    terminal = TK_MUL;
-                }
-                else if (strcmp(token, "TK_DIV") == 0) {
-                    terminal = TK_DIV;
-                }
-                else if (strcmp(token, "TK_CALL") == 0) {
-                    terminal = TK_CALL;
-                }
-                else if (strcmp(token, "TK_RECORD") == 0) {
-                    terminal = TK_RECORD;
-                }
-                else if (strcmp(token, "TK_ENDRECORD") == 0) {
-                    terminal = TK_ENDRECORD;
-                }
-                else if (strcmp(token, "TK_ELSE") == 0) {
-                    terminal = TK_ELSE;
-                }
-                else if (strcmp(token, "TK_AND") == 0) {
-                    terminal = TK_AND;
-                }
-                else if (strcmp(token, "TK_OR") == 0) {
-                    terminal = TK_OR;
-                }
-                else if (strcmp(token, "TK_NOT") == 0) {
-                    terminal = TK_NOT;
-                }
-                else if (strcmp(token, "TK_LT") == 0) {
-                    terminal = TK_LT;
-                }
-                else if (strcmp(token, "TK_LE") == 0) {
-                    terminal = TK_LE;
-                }
-                else if (strcmp(token, "TK_EQ") == 0) {
-                    terminal = TK_EQ;
-                }
-                else if (strcmp(token, "TK_GT") == 0) {
-                    terminal = TK_GT;
-                }
-                else if (strcmp(token, "TK_GE") == 0) {
-                    terminal = TK_GE;
-                }
-                else if (strcmp(token, "TK_NE") == 0) {
-                    terminal = TK_NE;
-                }
-                else if (strcmp(token, "eps") == 0) {
-                    continue;
-                }
-
-                // Add the terminal to the appropriate set
-                if (isFirstSet) {
-                    currentSet->firstSet[currentSet->firstCount++] = terminal;
-                } else {
-                    currentSet->followSet[currentSet->followCount++] = terminal;
-                }
-
-                token = strtok(NULL, "{}, ");
-            }
-        }
+    for (int i = 0; i < NUMGRAMMAR; i++) {
+        firstFollowSets[i].firstSet = malloc(sizeof(tk) * MAX_TERMINALS);
+        firstFollowSets[i].followSet = malloc(sizeof(tk) * MAX_TERMINALS);
+        firstFollowSets[i].firstCount = 0;
+        firstFollowSets[i].followCount = 0;
     }
 
-<<<<<<< Updated upstream
-    fclose(file);
-    return firstFollowSets;
-}
-
-void createParseTable(FirstFollowSet* F, ParseTable* T){
-    T = (ParseTable*)malloc(sizeof(ParseTable));
-    for (int i = 0; i < MAX_NONTERMINALS; i++) {
-        T[i] = (GrammarRule*)malloc(sizeof(GrammarRule) * MAX_TERMINALS);
-        for (int j = i; j < MAX_TERMINALS; j++) {
-            T[i][j]->rule = NULL;
-        }
-    }
-    for(int i = 0; i < grammarRuleCount; i++){
-        eps_in_first = false;
-        for(int j = 0; j <grammarRules[i].rhsCount; j++ ){
-            for(int m = 0; m < F[grammarRules[i]->rhs[j]]->firstCount; m++){
-                tk first = F[grammarRules[i]->rhs[j]]->firstSet[m];
-                if(first != TK_EPS){
-                    T[grammarRules[i]->lhs][grammarRules[i]->rhs[j]] = grammarRules[i];
-                }
-                else{
-                    eps_in_first = true;
-                }
-            /*else{
-                for(int k = 0; k< grammarRules[i].followCount;k++){
-               tk follow = F[grammarRules[i].lhs]->followSet[j];
-               for (int l = 0; l < MAX_NONTERMINALS; i++) {
-                if (T[l].nt ==grammarRules[i].lhs){
-                for (int m = i; m < MAX_TERMINALS; j++) {
-                    if(T[m].t == follow){
-                        T[m]->rule = grammarRules[i]
-                        break;
-                    }
-                }
-                break;
-                }
-            }
-
-            }
-        }*/
-            }
-            if (eps_in_first){
-                for(int k = 0; k< grammarRules[i].followCount;k++){
-                    tk follow = F[grammarRules[i].lhs]->followSet[j];
-                   T[grammarRules[i]->lhs][follow] = grammarRules[i];
-                }
-=======
     firstFollowSets[program].firstSet[firstFollowSets[program].firstCount++] = TK_FUNID;
     firstFollowSets[program].firstSet[firstFollowSets[program].firstCount++] = TK_MAIN;
     firstFollowSets[mainFunction].firstSet[firstFollowSets[mainFunction].firstCount++] = TK_MAIN;
@@ -1795,6 +1297,7 @@ void createParseTable(FirstFollowSet* F, ParseTable* T){
     return firstFollowSets;
 }
 
+
 //void createParseTable(FirstFollowSet* F, ParseTable* T){
     // T = (ParseTable*)malloc(sizeof(ParseTable));
     // for (int i = 0; i < MAX_NON_TERMINALS; i++) {
@@ -1808,7 +1311,7 @@ void createParseTable(FirstFollowSet* F, ParseTable* T){
     //     for(int j = 0; j <grammarRules[i].rhsCount; j++ ){
     //         for(int m = 0; m < F[grammarRules[i]->rhs[j]]->firstCount; m++){
     //             tk first = F[grammarRules[i]->rhs[j]]->firstSet[m];
-    //             if(first != TK_EPS){
+    //             if(first != TK_EPS;){
     //                 T[i][j]->rule = grammarRules[i];
     //             }
     //             else eps_in_first = true;
@@ -1825,37 +1328,21 @@ void createParseTable(FirstFollowSet* F, ParseTable* T){
 void createParseTable(FirstFollowSet* F, ParseTable** T) {
     // Allocate the ParseTable struct
     *T = malloc(sizeof(ParseTable));
-    if (!*T) {
-        perror("Failed to allocate ParseTable");
-        exit(EXIT_FAILURE);
-    }
 
     // Allocate 2D array of pointers
     (*T)->rule = malloc(MAX_NON_TERMINALS * sizeof(GrammarRule**));
-    if (!(*T)->rule) {
-        free(*T);
-        perror("Failed to allocate rule array");
-        exit(EXIT_FAILURE);
-    }
 
     // Initialize each row
     for (int i = 0; i < MAX_NON_TERMINALS; i++) {
         (*T)->rule[i] = calloc(MAX_TERMINALS, sizeof(GrammarRule*));
-        if (!(*T)->rule[i]) {
-            // Cleanup on failure
-            for (int j = 0; j < i; j++) free((*T)->rule[j]);
-            free((*T)->rule);
-            free(*T);
-            perror("Failed to allocate rule row");
-            exit(EXIT_FAILURE);
-        }
     }
 
     // Populate the table
     for (int i = 0; i < grammarRuleCount; i++) {
         GrammarRule* rule = &grammarRules[i];
         NonTerminal A = rule->lhs;
-        int can_derive_epsilon = 1;
+        printf("Rule: %s\n", nonTerminalNames[A]);
+        int can_derive_epsilon = 0;
 
         for (int j = 0; j < rule->rhsCount; j++) {
             Token symbol = rule->rhs[j];
@@ -1864,11 +1351,15 @@ void createParseTable(FirstFollowSet* F, ParseTable** T) {
                 if (symbol.tk.t != TK_EPS) {
                     (*T)->rule[A][symbol.tk.t] = rule;  // Assign pointer
                 }
-                can_derive_epsilon = 0;
+                //printf("eps encountered\n");
+                else{
+                    can_derive_epsilon = 1;
+                }
                 break;
             } else {
                 NonTerminal B = symbol.tk.n;
-                can_derive_epsilon = 0;
+                printf("  Checking FIRST(%s)\n", nonTerminalNames[B]);
+                can_derive_epsilon = 1;
                 
                 for (int k = 0; k < F[B].firstCount; k++) {
                     tk term = F[B].firstSet[k];
@@ -1887,74 +1378,87 @@ void createParseTable(FirstFollowSet* F, ParseTable** T) {
         }
 
         if (can_derive_epsilon) {
+            printf("Can derive epsilon: %s\n", nonTerminalNames[A]);
             for (int j = 0; j < F[A].followCount; j++) {
                 tk term = F[A].followSet[j];
                 (*T)->rule[A][term] = rule;  // Assign pointer
->>>>>>> Stashed changes
             }
         }
     }
 }
-<<<<<<< Updated upstream
-=======
-    
-    void freeParseTable(ParseTable* T) {
-        if (!T) return;
-        
-        for (int i = 0; i < MAX_NON_TERMINALS; i++) {
-            free(T->rule[i]);
-        }
-        free(T->rule);
-        free(T);
-    }
-    int containsEpsilon(tk* firstSet, int count) {
-        for (int i = 0; i < count; i++) {
-            if (firstSet[i] == TK_EPS) return 1;
-        }
-        return 0;
-    }
 
-    void printParseTable(ParseTable* T, const char** nonTerminalNames, const char** terminalNames) {
-        printf("\nParse Table:\n");
-        printf("====================================================================\n");
-        
-        for (int nt = 0; nt < MAX_NON_TERMINALS; nt++) {
-            printf("%-20s | ", nonTerminalNames[nt]);
-            
-            for (int t = 0; t < MAX_TERMINALS; t++) {
-                if (T->rule[nt][t] != NULL) {
-                    GrammarRule* rule = T->rule[nt][t];
-                    
-                    // Print terminal name and rule number
-                    printf("%s: %d\t", terminalNames[t], rule->ruleNumber);
-                }
-            }
-            printf("\n");
-        }
-        printf("====================================================================\n");
+int containsEpsilon(tk* firstSet, int count) {
+    for (int i = 0; i < count; i++) {
+        if (firstSet[i] == TK_EPS) return 1;
     }
->>>>>>> Stashed changes
+    return 0;
+}
+
+void freeParseTable(ParseTable* T) {
+    if (!T) return;
+    
+    for (int i = 0; i < MAX_NON_TERMINALS; i++) {
+        free(T->rule[i]);
+    }
+    free(T->rule);
+    free(T);
+}
+
+// Helper function to convert a grammar rule to a string
+void getRuleString(GrammarRule* rule, char* buffer, const char** nonTerminalNames, const char** terminalNames) {
+    // Start with LHS
+    sprintf(buffer, "%s → ", nonTerminalNames[rule->lhs]);
+    
+    // Handle RHS symbols
+    for (int i = 0; i < rule->rhsCount; i++) {
+        Token symbol = rule->rhs[i];
+        if (symbol.isTerminal) {
+            if (symbol.tk.t == TK_EPS) {
+                strcat(buffer, "ε");
+            } else {
+                strcat(buffer, terminalNames[symbol.tk.t]);
+            }
+        } else {
+            strcat(buffer, nonTerminalNames[symbol.tk.n]);
+        }
+        
+        // Add space between symbols
+        if (i != rule->rhsCount - 1) {
+            strcat(buffer, " ");
+        }
+    }
+}
+
+void printParseTable(ParseTable* T, const char** nonTerminalNames, const char** terminalNames) {
+    printf("\nParse Table:\n");
+    printf("====================================================================\n");
+    
+    for (int nt = 0; nt < MAX_NON_TERMINALS; nt++) {
+        printf("%s:\n", nonTerminalNames[nt]);
+        
+        for (int t = 0; t < MAX_TERMINALS; t++) {
+            if (T->rule[nt][t] != NULL) {
+                char ruleStr[256];
+                GrammarRule* rule = T->rule[nt][t];
+                getRuleString(rule, ruleStr, nonTerminalNames, terminalNames);
+                printf("  On %-15s: %s\n", terminalNames[t], ruleStr);
+            }
+        }
+        printf("------------------------------------------------------------\n");
+    }
+    printf("====================================================================\n");
+}
 
 int main() {
 
     printf("hello testing");
-<<<<<<< Updated upstream
-    int grammarRulkCount = 0;
-    //storeGrammarRules(); // Ensure this function is called to populate the grammarRules
-    int nonTerminalCount = 0;
-    //printGrammarRules(); // Call the function to print the rules
-    printf("nt = %d\n", T[23].nt);
-    printf("t = %d\n", T[45].t);
-    // Free allocated memory here if needed
-=======
-    firstFollowSets = computeFirstFollowSets();
+    firstFollowSets = ComputeFirstFollowSets();
     printf("\nPrinting FIRST sets:\n");
     printf("===================\n");
-    //printFirstSets();
+   // printFirstSets();
     storeGrammarRules(); 
     //printGrammarRules();
    createParseTable(firstFollowSets, &parseTable);
    printParseTable(parseTable, nonTerminalNames, terminalNames); 
->>>>>>> Stashed changes
     return 0;
 }
