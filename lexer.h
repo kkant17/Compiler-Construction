@@ -63,7 +63,8 @@ typedef enum {
     TK_GE,
     TK_NE,
     TK_DOLLAR,
-    TK_EPS
+    TK_EPS,
+    TK_COMMENT
 } tk;
 
 typedef union lexeme{//from later in the document: 
@@ -78,12 +79,11 @@ typedef struct tokenInfo{//stores lexeme, line number, token type and lexeme's f
     tk tkid;
     //int cno;
     lexeme lex;
+    int err;
 } tokenInfo;
 
 typedef struct twinBuffer{
-    char buf1[30];
-    char buf2[30];
-    int currbuf;
+    char buf[60];
     int index;
     //int cno;
     int lno;
@@ -91,7 +91,7 @@ typedef struct twinBuffer{
 
 
 void removeComments(char *testcaseFile, char *cleanFile);
-FILE *getStream(twinBuffer* buffer, FILE *fp);
+FILE *getStream(twinBuffer* buffer, FILE *fp, int bufno);
 tokenInfo getNextToken(twinBuffer* B, FILE *fp);
 
 #endif
