@@ -62,13 +62,8 @@ typedef enum {
     TK_GT,
     TK_GE,
     TK_NE,
-<<<<<<< Updated upstream
-    TK_DOLLAR,
-    TK_EPS
-=======
     TK_EPS,
     TK_DOLLAR
->>>>>>> Stashed changes
 } tk;
 
 typedef union lexeme{//from later in the document: 
