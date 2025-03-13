@@ -95,9 +95,19 @@ typedef struct lookuptbl{
     tk tkid;
 } lookuptbl;
 
+// Linked list node structure
+typedef struct TokenNode {
+    tokenInfo data;
+    struct TokenNode* next;
+} TokenNode;
+
 
 void removeComments(char *testcaseFile, char *cleanFile);
 FILE *getStream(twinBuffer* buffer, FILE *fp, int bufno);
 tokenInfo getNextToken(twinBuffer* B, FILE *fp, lookuptbl* table);
+TokenNode* createTokenNode(tokenInfo info);
+void appendTokenNode(TokenNode** head, tokenInfo info);
+void printTokenList(TokenNode* head);
+void freeTokenList(TokenNode* head)
 
 #endif
