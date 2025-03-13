@@ -713,6 +713,104 @@ tokenInfo getNextToken(twinBuffer* B, FILE* fp, lookuptbl* table){
 
 }
 
+TokenNode* createTokenNode(tokenInfo info) {
+    TokenNode* newNode = (TokenNode*)malloc(sizeof(TokenNode));
+    if (!newNode) {
+        perror("Memory allocation failed");
+        exit(EXIT_FAILURE);
+    }
+    newNode->data = info;
+    newNode->next = NULL;
+    return newNode;
+}
+
+// Add a node to the end of the list
+void appendTokenNode(TokenNode** head, tokenInfo info) {
+    TokenNode* newNode = createTokenNode(info);
+    
+    if (*head == NULL) {
+        *head = newNode;
+        return;
+    }
+
+    TokenNode* current = *head;
+    while (current->next != NULL) {
+        current = current->next;
+    }
+    current->next = newNode;
+}
+
+// Print all tokens in the list
+void printTokenList(TokenNode* head) {
+    TokenNode* current = head;
+    while (current != NULL) {
+        printf("Line %d: Token %d", current->data.lno, current->data.tkid);
+        
+        // Print lexeme value based on token type
+        if (current->data.tkid == TK_NUM) {
+            printf(" (Value: %d)", current->data.val.ival);
+        }
+        else if (current->data.tkid == TK_RNUM) {
+            printf(" (Value: %.2f)", current->data.val.rval);
+        }
+        else {
+            printf(" (Lexeme: %s)", current->data.strlex);
+        }
+
+        if (current->data.err) {
+            printf(" [LEXICAL ERROR]");
+        }
+        printf("\n");
+        
+        current = current->next;
+    }
+}
+
+// Free the entire list
+void freeTokenList(TokenNode* head) {
+    TokenNode* current = head;
+    while (current != NULL) {
+        TokenNode* next = current->next;
+        free(current);
+        current = next;
+    }
+}
+
+// Example usage
+int main() {
+    TokenNode* head = NULL;
+    
+    // Create sample token information
+    tokenInfo token1 = {
+        .lno = 1,
+        .tkid = TK_ID,
+        .val = {0},
+        .strlex = "variableX",
+        .err = 0
+    };
+    
+    tokenInfo token2 = {
+        .lno = 2,
+        .tkid = TK_NUM,
+        .val = {.ival = 42},
+        .strlex = "",
+        .err = 0
+    };
+
+    // Add tokens to the list
+    appendTokenNode(&head, token1);
+    appendTokenNode(&head, token2);
+
+    // Print the list
+    printf("Token List:\n");
+    printTokenList(head);
+
+    // Free memory
+    freeTokenList(head);
+
+    return 0;
+}
+
 //final state action order-
 //0) One mandatory retract in all final states, so that B->index now points to the last character seen to get to current state and not the next character to examine
 //1) retract again if needed (reduce B->index, changing currbuf and B->index as needed if the new value is negative)
