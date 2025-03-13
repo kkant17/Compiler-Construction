@@ -3,8 +3,70 @@
 #include <stdlib.h>
 #include <math.h>
 #include <stdbool.h>
-#include "lexer.h"
+#include "leggser.h"
+#define MAX_TERMINALS 59
 
+const char* terminalNames[MAX_TERMINALS] = {
+    "TK_ASSIGNOP",
+    "TK_FIELDID",
+    "TK_ID",
+    "TK_NUM",
+    "TK_RNUM",
+    "TK_FUNID",
+    "TK_RUID",
+    "TK_WITH",
+    "TK_PARAMETERS",
+    "TK_END",
+    "TK_WHILE",
+    "TK_UNION",
+    "TK_ENDUNION",
+    "TK_DEFINETYPE",
+    "TK_AS",
+    "TK_TYPE",
+    "TK_MAIN",
+    "TK_GLOBAL",
+    "TK_PARAMETER",
+    "TK_LIST",
+    "TK_SQL",
+    "TK_SQR",
+    "TK_INPUT",
+    "TK_OUTPUT",
+    "TK_INT",
+    "TK_REAL",
+    "TK_COMMA",
+    "TK_SEM",
+    "TK_COLON",
+    "TK_DOT",
+    "TK_ENDWHILE",
+    "TK_OP",
+    "TK_CL",
+    "TK_IF",
+    "TK_THEN",
+    "TK_ENDIF",
+    "TK_READ",
+    "TK_WRITE",
+    "TK_RETURN",
+    "TK_PLUS",
+    "TK_MINUS",
+    "TK_MUL",
+    "TK_DIV",
+    "TK_CALL",
+    "TK_RECORD",
+    "TK_ENDRECORD",
+    "TK_ELSE",
+    "TK_AND",
+    "TK_OR",
+    "TK_NOT",
+    "TK_LT",
+    "TK_LE",
+    "TK_EQ",
+    "TK_GT",
+    "TK_GE",
+    "TK_NE",
+    "TK_DOLLAR",
+    "TK_EPS",
+    "TK_COMMENT"
+};
 
 
 //running count of line and character, so as to populate the fields in the tokenInfo structure in getNextToken(twinBuffer B) 
@@ -32,18 +94,22 @@ void removeComments(char *testcaseFile, char *cleanFile){//assumes char array te
 }
 
 FILE *getStream(twinBuffer* buffer, FILE *fp, int bufno) {//populates twin buffer(a global variable) with 200 characters  
+    int charsread;
+
     if (fp == NULL) {
         printf("Error: File pointer is NULL\n");
         return NULL;
     }
     if (bufno==1){
         //printf("0 to 1\n");
-        fread(buffer->buf+30, sizeof(char), 30, fp);
+        charsread=fread(buffer->buf+30, sizeof(char), 30, fp);
+        if(charsread!=30){buffer->buf[30+charsread]='\0';}
         //buffer->index=30;
     }
     else if (bufno==0){
         //printf("1 to 0\n");
-        fread(buffer->buf, sizeof(char), 30, fp);
+        charsread=fread(buffer->buf, sizeof(char), 30, fp);
+        if(charsread!=30){buffer->buf[charsread]='\0';}
         //buffer->index=0;
     }
     return fp;
@@ -57,19 +123,19 @@ FILE *getStream(twinBuffer* buffer, FILE *fp, int bufno) {//populates twin buffe
 
 tokenInfo set_lexeme(twinBuffer* B, int len,tk toktype){
     int fwdptr=(B->index+len+59)%60;
-    printf("fwdptr is %d",fwdptr);
+    //printf("fwdptr is %d",fwdptr);
     tokenInfo token;
     token.err=0;
     token.lno=B->lno;  
     token.tkid=toktype;
     if(fwdptr<B->index){
-        strncpy(token.lex.strlex,B->buf+B->index,60-B->index);
-        strncpy(token.lex.strlex+60-B->index,B->buf,fwdptr+1);
-        token.lex.strlex[len]='\0';
+        strncpy(token.strlex,B->buf+B->index,60-B->index);
+        strncpy(token.strlex+60-B->index,B->buf,fwdptr+1);
+        token.strlex[len]='\0';
     }
     else{
-        strncpy(token.lex.strlex,B->buf+B->index,len);
-        token.lex.strlex[len]='\0';
+        strncpy(token.strlex,B->buf+B->index,len);
+        token.strlex[len]='\0';
     }
     return token;
 }
@@ -79,9 +145,7 @@ tokenInfo set_lexeme(twinBuffer* B, int len,tk toktype){
 
 tokenInfo int_token(twinBuffer* B, int len){
     tokenInfo token;
-    token.err=0;
-    token.lno=B->lno;
-    token.tkid=TK_INT;
+    token=set_lexeme(B,len,TK_NUM);
     int value=0;
     int multiplier=1;
     int i=B->index;
@@ -96,16 +160,15 @@ tokenInfo int_token(twinBuffer* B, int len){
         i=(i+1)%60;
     }
     value=value*10+(B->buf[i]-48);
-
-    token.lex.ival=value;
+    
+    token.val.rval=0;
+    token.val.ival=value;
     return token;
 }
 
 tokenInfo float_token(twinBuffer* B, int len){
     tokenInfo token;    
-    token.err=0;
-    token.lno=B->lno;
-    token.tkid=TK_REAL;
+    token=set_lexeme(B,len,TK_RNUM);
     float value=0;
     float dec=0;
     float exp=0;
@@ -135,39 +198,53 @@ tokenInfo float_token(twinBuffer* B, int len){
     
     //printf("exp is %f\n",exp);
 
-    token.lex.rval=value;
+    token.val.ival=0;
+    token.val.rval=value;
     return token;
     
 }
 
 
 
-int isunknown(int lno, char c){
-            if((c<=9)||
-            ((c>=11)&&(c<=31))||
-            c==34||
-            c==27||
-            c==63||
-            c==92||
-            c==94||
-            c==96||
-            ((c>=123)&&(c<=125))||
-            c>125){
-               
-               return 1; 
-            }
+int isunknown(char c){
+            if((c<=9)&&(c>0)||((c>=11)&&(c<=31))||c==27||c==34||c==36||c==63||c==92||c==94||c==96||((c>=123)&&(c<=125))||c>125){return 1;}
             else return 0;
-
 }
+
+//symbol table strcmp binary search
+tokenInfo lookup(twinBuffer* B, int len, lookuptbl* table, tk toktype){
+    tokenInfo tkinf=set_lexeme(B,len,toktype);
+    //check if len exceeded, if so just return tkinf
+    int low=0, high=27, mid=13;
+    int cmp;
+
+    while(low<=high){
+        mid=(low+high)/2;
+        cmp=strcmp(tkinf.strlex,table[mid].keyw);
+        if(cmp==0){
+            tkinf.tkid=table[mid].tkid;
+            high=low-1;
+        }
+        else if(cmp<0){
+            high=mid-1;
+        }
+        else{
+            low=mid+1;
+        }
+    }
+
+    return tkinf;
+}
+
 
 
 
 
 //NEED ERROR FUNCTION for incorrect pattern to check if the other flags are there first and work only if they're off
 
-tokenInfo getNextToken(twinBuffer* B, FILE* fp){
+tokenInfo getNextToken(twinBuffer* B, FILE* fp, lookuptbl* table){
     tokenInfo token;
-    lexeme lex;
+    //lexeme lex;
     int state=0;
     char currchar;
     int len=0;
@@ -175,10 +252,12 @@ tokenInfo getNextToken(twinBuffer* B, FILE* fp){
     int contflag=1;
     int tokentype;
     while (contflag){
-        printf("B->index is %d",B->index);
+        //printf("B->index is %d",B->index);
 
         if(((B->index+len)%30)==0){//Load a buffer if needed
-            fp=getStream(B,fp,((B->index+len)%60==0)?0:1);
+            int buftoload=((B->index+len)%60==0)?0:1;
+            if(B->loadedbuf!=buftoload) fp=getStream(B,fp,buftoload);
+            B->loadedbuf=buftoload;
         }
         currchar=B->buf[(B->index+len)%60];//character to examine- len characters of the token have already been examined
         //printf("currchar is %c",currchar);
@@ -189,9 +268,9 @@ tokenInfo getNextToken(twinBuffer* B, FILE* fp){
         len++;
         switch (state){
             case 0: 
-                printf("In state 0\n");
-                printf("B->index is %d\n",B->index);
-                printf("currchar is %c\n\n",currchar);
+                //printf("In state 0\n");
+                //printf("B->index is %d\n",B->index);
+                //printf("currchar is %c\n\n",currchar);
                 if((48<=currchar)&&(57>=currchar)){state=1;break;}
                 if(currchar=='!'){state=16;break;}
                 if(currchar=='='){state=17;break;}
@@ -220,9 +299,10 @@ tokenInfo getNextToken(twinBuffer* B, FILE* fp){
                 if(currchar=='\n'){state=76;break;}
                 if((currchar<=100)&&(currchar>=98)){state=58;break;}
                 if((currchar<=122)&&(currchar>=101)){state=56;break;}
-                if(currchar=='a'){state=56;break;}
+                if(currchar=='a'){state=56;break;}//fixed this
                 if(currchar=='#'){state=50;break;}
-                if(isunknown(B->lno,currchar)){
+                if(isunknown(currchar)){
+                    //printf("errflag set condition reached\n");
                     errflag=1;
                     contflag=0;
                     break;
@@ -230,18 +310,28 @@ tokenInfo getNextToken(twinBuffer* B, FILE* fp){
                 state=75;
                 break;
             case 1:
-                printf("In state 1\n");
-                printf("B->index is %d\n",B->index);
-                printf("currchar is %c\n\n",currchar);
+                //printf("In state 1\n");
+                //printf("B->index is %d\n",B->index);
+                //printf("currchar is %c\n\n",currchar);
                 if((48<=currchar)&&(57>=currchar)){state=1;break;}
                 if(currchar=='.'){state=3;break;}
                 len--;
+                if(len>30){
+                contflag=0;
+                token.tkid=TK_NUM;
+                break;
+                }
                 token=int_token(B,len);
                 B->index=(B->index+len)%60;
                 return token;
             case 3:
                 if((48<=currchar)&&(57>=currchar)){state=4;break;}
                 len-=2;
+                if(len>30){
+                contflag=0;
+                token.tkid=TK_NUM;
+                break;
+                }
                 token=int_token(B,len);
                 B->index=(B->index+len)%60;
                 return token;
@@ -254,6 +344,11 @@ tokenInfo getNextToken(twinBuffer* B, FILE* fp){
             case 5:
                 if(currchar=='E'){state=7;break;}
                 len--;
+                if(len>30){
+                contflag=0;
+                token.tkid=TK_RNUM;
+                break;
+                }
                 token=float_token(B,len);
                 B->index=(B->index+len)%60;
                 return token;
@@ -267,6 +362,11 @@ tokenInfo getNextToken(twinBuffer* B, FILE* fp){
                 break;
             case 8:
                 if((48<=currchar)&&(57>=currchar)){
+                    if(len>30){
+                      contflag=0;
+                      token.tkid=TK_RNUM;
+                      break;
+                    }
                     token=float_token(B,len);
                     B->index=(B->index+len)%60;
                     return token;
@@ -283,6 +383,11 @@ tokenInfo getNextToken(twinBuffer* B, FILE* fp){
                 break;
             case 11:
                 if((48<=currchar)&&(57>=currchar)){
+                    if(len>30){
+                      contflag=0;
+                      token.tkid=TK_RNUM;
+                      break;
+                    }
                     token=float_token(B,len);
                     B->index=(B->index+len)%60;
                     return token;
@@ -317,9 +422,9 @@ tokenInfo getNextToken(twinBuffer* B, FILE* fp){
                     tokentype=TK_NE;
                     break;
                 }
-                errflag=2;
                 len--;
                 contflag=0;
+                tokentype=TK_GT;//earlier this was errflag=2;
                 break;
             case 21:
                 if(currchar=='-'){state=23;break;}
@@ -446,7 +551,6 @@ tokenInfo getNextToken(twinBuffer* B, FILE* fp){
                 tokentype=TK_COMMA;
                 break;
             case 74:
-                len--;
                 contflag=0;
                 tokentype=TK_DOLLAR;
                 break;
@@ -458,34 +562,152 @@ tokenInfo getNextToken(twinBuffer* B, FILE* fp){
                 break;
             case 69://nice
                 if(currchar==' '){state=69;break;}
+                len--;//we need a retract here so as not to see the next char
                 B->index=(B->index+len)%60;
+                //printf("here index is %d\n",B->index);
                 len=0;
                 state=0;
                 break;
             case 71:
                 if(currchar=='\0'){
-                    len--;
-                    contflag=0;
                     tokentype=TK_COMMENT;
-                    break;
+                    token.lno=B->lno;
+                    token.strlex[0]='%';
+                    token.strlex[1]='\0';
+                    token.tkid=tokentype;
+                    len--;
+                    token.err=errflag;
+                    B->index=(B->index+len)%60;
+                    return token;
                 }
                 if(currchar=='\n'){
                     tokentype=TK_COMMENT;
-                    token=set_lexeme(B,len,tokentype);
-                    B->index=(B->index+len)%60;
+                    token.lno=B->lno;
+                    token.strlex[0]='%';
+                    token.strlex[1]='\0';
+                    token.tkid=tokentype;
                     token.err=errflag;
+                    B->index=(B->index+len)%60;
                     B->lno++;
-                    break;
+                    return token;//break was used here earlier
                 }
                 state=71;
                 break;
+            //started from here
+            case 50:
+                if((97<=currchar)&&(122>=currchar)){state=51;break;}
+                errflag=2;
+                len--;
+                contflag=0;
+                break;
+            case 51:
+                if((97<=currchar)&&(122>=currchar)){state=51;break;}
+                len--;
+                if(len>30){
+                contflag=0;
+                token.tkid=TK_RUID;
+                break;
+                }
+                contflag=0;
+                tokentype=TK_RUID;
+                break;
+            case 53:
+                if(((97<=currchar)&&(122>=currchar))||((65<=currchar)&&(90>=currchar))){state=54;break;}
+                errflag=2;
+                len--;
+                contflag=0;
+                break;
+            case 54:
+                if(((97<=currchar)&&(122>=currchar))||((65<=currchar)&&(90>=currchar))||((48<=currchar)&&(57>=currchar))){state=54;break;}
+                len--;
+                if(len>30){
+                contflag=0;
+                token.tkid=TK_FUNID;
+                break;
+                }
+                token=lookup(B,len,table,TK_FUNID);//could be _main here
+                B->index=(B->index+len)%60;
+
+                return token;
+            case 56:
+                if(((97<=currchar)&&(122>=currchar))||((65<=currchar)&&(90>=currchar))){state=56;break;}
+                len--;
+                if(len>30){
+                contflag=0;
+                token.tkid=TK_FIELDID;
+                break;
+                }
+                token=lookup(B,len,table,TK_FIELDID);
+                B->index=(B->index+len)%60;
+                return token;
+            case 58:
+                if((97<=currchar)&&(122>=currchar)){state=60;break;}
+                if((50<=currchar)&&(55>=currchar)){state=62;break;}
+                len--;
+                if(len>30){
+                contflag=0;
+                token.tkid=TK_FIELDID;
+                break;
+                }
+                token=lookup(B,len,table,TK_FIELDID);
+                B->index=(B->index+len)%60;
+                return token;
+            case 60:
+                if((97<=currchar)&&(122>=currchar)){state=60;break;}
+                len--;
+                if(len>30){
+                contflag=0;
+                token.tkid=TK_FIELDID;
+                break;
+                }
+                token=lookup(B,len,table,TK_FIELDID);
+                B->index=(B->index+len)%60;
+                return token;
+            case 62:
+                if((currchar<=100)&&(currchar>=98)){state=64;break;}
+                len--;
+                contflag=0;
+                tokentype=TK_ID;
+                break;
+            case 64:
+                if((currchar<=100)&&(currchar>=98)){state=64;break;}
+                if((50<=currchar)&&(55>=currchar)){state=66;break;}
+                len--;
+                if(len>20){
+                B->index=(B->index+len)%60;
+                token.tkid=TK_ID;
+                token.err=3;
+                return token;
+                }
+                tokentype=TK_ID;
+                contflag=0;
+                break;
+            case 66:
+                if((50<=currchar)&&(55>=currchar)){state=66;break;}
+                len--;
+                if(len>20){
+                B->index=(B->index+len)%60;
+                token.tkid=TK_ID;
+                token.err=3;
+                return token;
+                }
+                tokentype=TK_ID;
+                contflag=0;
+                break;
+
         }
     }
     
-    
+    if(len>30){
+        B->index=(B->index+len)%60;
+        token.err=3;
+        printf("Token is too long\n\n");
+        return token;
+    }
+
+    //printf("loop broken\n");
     token=set_lexeme(B,len,tokentype);
     B->index=(B->index+len)%60;
-    
     token.err=errflag;
     return token;
 
@@ -513,30 +735,102 @@ tokenInfo getNextToken(twinBuffer* B, FILE* fp){
 }*/
 
 int main(){
+    lookuptbl table[28];
+    strcpy(table[0].keyw,"_main");table[0].tkid=TK_MAIN;
+    strcpy(table[1].keyw,"as");table[1].tkid=TK_AS;
+    strcpy(table[2].keyw,"call");table[2].tkid=TK_CALL;
+    strcpy(table[3].keyw,"definetype");table[3].tkid=TK_DEFINETYPE;
+    strcpy(table[4].keyw,"else");table[4].tkid=TK_ELSE;
+    strcpy(table[5].keyw,"end");table[5].tkid=TK_END;
+    strcpy(table[6].keyw,"endif");table[6].tkid=TK_ENDIF;
+    strcpy(table[7].keyw,"endrecord");table[7].tkid=TK_ENDRECORD;
+    strcpy(table[8].keyw,"endunion");table[8].tkid=TK_ENDUNION;
+    strcpy(table[9].keyw,"endwhile");table[9].tkid=TK_ENDWHILE;
+    strcpy(table[10].keyw,"global");table[10].tkid=TK_GLOBAL;
+    strcpy(table[11].keyw,"if");table[11].tkid=TK_IF;
+    strcpy(table[12].keyw,"input");table[12].tkid=TK_INPUT;
+    strcpy(table[13].keyw,"int");table[13].tkid=TK_INT;
+    strcpy(table[14].keyw,"list");table[14].tkid=TK_LIST;
+    strcpy(table[15].keyw,"output");table[15].tkid=TK_OUTPUT;
+    strcpy(table[16].keyw,"parameter");table[16].tkid=TK_PARAMETER;
+    strcpy(table[17].keyw,"parameters");table[17].tkid=TK_PARAMETERS;
+    strcpy(table[18].keyw,"read");table[18].tkid=TK_READ;
+    strcpy(table[19].keyw,"real");table[19].tkid=TK_REAL;
+    strcpy(table[20].keyw,"record");table[20].tkid=TK_RECORD;
+    strcpy(table[21].keyw,"return");table[21].tkid=TK_RETURN;
+    strcpy(table[22].keyw,"then");table[22].tkid=TK_THEN;
+    strcpy(table[23].keyw,"type");table[23].tkid=TK_TYPE;
+    strcpy(table[24].keyw,"union");table[24].tkid=TK_UNION;
+    strcpy(table[25].keyw,"while");table[25].tkid=TK_WHILE;
+    strcpy(table[26].keyw,"with");table[26].tkid=TK_WITH;
+    strcpy(table[27].keyw,"write");table[27].tkid=TK_WRITE;
+
+
     twinBuffer* buffer;
     buffer=(twinBuffer *)malloc(sizeof(twinBuffer));
-    buffer->lno=1;
-    //buffer->cno=1; 
-    int len=0;
+    buffer->lno=1; 
     buffer->index=0;
+    buffer->loadedbuf=-1;
+    int len=0;
     FILE* test=fopen("test.txt","r");
-    test=getStream(buffer,test,0);
+    //test=getStream(buffer,test,0);
+    //test=getStream(buffer,test,1);
     
+    int i=5;
+    tokenInfo tkinf;
+    while(true){
+    tkinf= getNextToken(buffer,test,table);
+    if(tkinf.tkid==TK_DOLLAR){break;}
+    if(tkinf.err==0)printf("Line no. %d    Lexeme %s   Token %s\n",tkinf.lno,tkinf.strlex,terminalNames[tkinf.tkid]);
+    else if(tkinf.err==3)
+        {
+         if(tkinf.tkid==TK_NUM){
+          printf("Line No %d : Error :Integer is longer than the maximum length of 30 digits\n",tkinf.lno);
+         }
+         else if(tkinf.tkid==TK_RNUM){
+          printf("Line No %d : Error :Floating-point number is longer than the maximum length of 30 characters\n",tkinf.lno);
+         }
+         else if(tkinf.tkid==TK_ID){
+          printf("Line No %d : Error :Variable is longer than the prescribed length of 20 characters\n",tkinf.lno);
+         }
+         else{
+          printf("Line No %d : Error :Record, union, field or function identifier is longer than the maximum length of 30 characters\n",tkinf.lno);
+         }
+        }
+    else if(tkinf.err==2)printf("Line no: %d : Error: Unknown pattern <%s>\n",tkinf.lno,tkinf.strlex);
+    else printf("Line No %d : Error: Unknown Symbol <%s>\n",tkinf.lno,tkinf.strlex); 
+    }
+    //printf("Buffer: %s\n", buffer->buf);
+    //printf("Index: %d\n", buffer->index);
+    //printf("Index character is %c\n",buffer->buf[buffer->index]);
+    //printf("Loaded buffer: %d\n\n", buffer->loadedbuf);
 
-    //tokenInfo tkinf= getNextToken(buffer,test);
+    /*if(tkinf.tkid==TK_INT)printf("value of tkn is %d\n",tkinf.val.ival);
+    else if(tkinf.tkid==TK_REAL)printf("value of tkn is %f\n",tkinf.val.rval);
+    else printf("value of tkn is %s\n",tkinf.strlex);
+    printf("value of error %d\n",tkinf.err);*/
 
-    //printf("value of tkn is %d\n",tkinf.lex.ival);
-
+    /*
     printf("Buffer: %s\n", buffer->buf);
     printf("Index: %d\n", buffer->index);
     //printf("Character Number: %d\n", buffer->cno);
     printf("Line Number: %d\n", buffer->lno);
+    printf("\n\n\n\n");
+    i--;*/
 
-    buffer->index=2;
-    len=9;
-    tokenInfo tkinf=float_token(buffer,len);
-    printf("floatval is %f\n",tkinf.lex.rval);
+
+
+
+
+
+    /*
+    buffer->index=29;
+    len=5;
+    tokenInfo tkinf=set_lexeme(buffer,len,TK_ID);
+    printf("floatval is %s\n",tkinf.lex.strlex);
+    printf("token type is %d\n",tkinf.tkid);
     //tkinf= getNextToken(buffer,test);
+
     //printf("value of tkn is %d\n",tkinf.lex.ival);
 
     printf("Buffer: %s\n", buffer->buf);
@@ -559,5 +853,6 @@ int main(){
     //tokenInfo tkinf=float_token(buffer,28);
     //printf("%f\n",tkinf.lex.rval);
     */
+
     return 0;
 }
