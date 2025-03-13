@@ -62,36 +62,42 @@ typedef enum {
     TK_GT,
     TK_GE,
     TK_NE,
+    TK_DOLLAR,
     TK_EPS,
-    TK_DOLLAR
+    TK_COMMENT
 } tk;
 
-typedef union lexeme{//from later in the document: 
+typedef union value{//from later in the document: 
                      //"If the lexeme is an integer or real number, then its value computed by the lexical analyzer should be printed..."
     int ival;
     float rval;
-    char strlex[30];
-} lexeme;
+}value;
 
 typedef struct tokenInfo{//stores lexeme, line number, token type and lexeme's first character's number in line. 
     int lno;
     tk tkid;
-    int cno;
-    lexeme lex;
+    //int cno;
+    value val;
+    char strlex[31];
+    int err;
 } tokenInfo;
 
 typedef struct twinBuffer{
-    char buf1[30];
-    char buf2[30];
-    int currbuf;
+    char buf[60];
     int index;
-    int cno;
+    //int cno;
     int lno;
+    int loadedbuf;
 } twinBuffer;
+
+typedef struct lookuptbl{
+    char keyw[11];
+    tk tkid;
+} lookuptbl;
 
 
 void removeComments(char *testcaseFile, char *cleanFile);
-FILE *getStream(FILE *fp);
-tokenInfo getNextToken(twinBuffer B);
+FILE *getStream(twinBuffer* buffer, FILE *fp, int bufno);
+tokenInfo getNextToken(twinBuffer* B, FILE *fp, lookuptbl* table);
 
 #endif
