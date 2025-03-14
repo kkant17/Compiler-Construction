@@ -1,0 +1,7 @@
+driver: driver.o finleggser.o
+	gcc -o driver driver.o finleggser.o -lm
+	rm *.o
+driver.o:
+	gcc -c driver.c
+finleggser.o:
+	gcc -c finleggser.c 
