@@ -553,7 +553,8 @@ tokenInfo getNextToken(twinBuffer* B, FILE* fp, lookuptbl* table){
             case 74:
                 contflag=0;
                 tokentype=TK_DOLLAR;
-                break;
+                token=set_lexeme(B,len,tokentype);
+                return token;
             case 76:
                 B->index=(B->index+1)%60;
                 len=0;
@@ -677,6 +678,7 @@ tokenInfo getNextToken(twinBuffer* B, FILE* fp, lookuptbl* table){
                 B->index=(B->index+len)%60;
                 token.tkid=TK_ID;
                 token.err=3;
+                token.lno=B->lno;
                 return token;
                 }
                 tokentype=TK_ID;
@@ -689,6 +691,7 @@ tokenInfo getNextToken(twinBuffer* B, FILE* fp, lookuptbl* table){
                 B->index=(B->index+len)%60;
                 token.tkid=TK_ID;
                 token.err=3;
+                token.lno=B->lno;
                 return token;
                 }
                 tokentype=TK_ID;
@@ -708,6 +711,7 @@ tokenInfo getNextToken(twinBuffer* B, FILE* fp, lookuptbl* table){
     if(len>30){
         B->index=(B->index+len)%60;
         token.err=3;
+        token.lno=B->lno;
         printf("Token is too long\n\n");
         return token;
     }
@@ -718,6 +722,32 @@ tokenInfo getNextToken(twinBuffer* B, FILE* fp, lookuptbl* table){
     token.err=errflag;
     return token;
 
+}
+
+HEAD tokenlist(twinBuffer* B, FILE* fp, lookuptbl* table){
+     HEAD list=(HEAD)malloc(sizeof(struct llhead));
+     list->head=NULL;
+     list->tail=NULL;
+     tokenInfo tkinf=getNextToken(B,fp,table);
+     NODE nextnode;
+     while(tkinf.tkid!=TK_DOLLAR){
+     nextnode=(NODE)malloc(sizeof(struct llnode));
+     nextnode->tkinf=tkinf;
+     nextnode->next=NULL;
+     if(list->tail==NULL){list->tail=nextnode;list->head=nextnode;}
+     else {list->tail->next=nextnode; list->tail=nextnode;}
+     tkinf=getNextToken(B,fp,table);
+     while(tkinf.err){tkinf=getNextToken(B,fp,table);}
+     }
+     return list;
+}
+
+void printtokenlist(HEAD list){
+    NODE node= list->head;
+    while(node!=NULL){
+        printf("Token lexeme is %s and type is %s\n",node->tkinf.strlex,terminalNames[node->tkinf.tkid]);
+        node=node->next;
+    }
 }
 
 //final state action order-
@@ -785,6 +815,15 @@ int main(){
     
     int i=5;
     tokenInfo tkinf;
+
+
+    //HEAD list= tokenlist(buffer,test,table);
+    //printtokenlist(list);
+
+
+
+    
+
     while(true){
     tkinf= getNextToken(buffer,test,table);
     if(tkinf.tkid==TK_DOLLAR){break;}
@@ -807,6 +846,11 @@ int main(){
     else if(tkinf.err==2)printf("Line no: %-5d : Error: Unknown pattern <%s>\n",tkinf.lno,tkinf.strlex);
     else printf("Line No %-5d : Error: Unknown Symbol <%s>\n",tkinf.lno,tkinf.strlex); 
     }
+
+
+
+
+
     //printf("Buffer: %s\n", buffer->buf);
     //printf("Index: %d\n", buffer->index);
     //printf("Index character is %c\n",buffer->buf[buffer->index]);
