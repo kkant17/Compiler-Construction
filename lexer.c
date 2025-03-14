@@ -4,7 +4,6 @@
 #include <math.h>
 #include <stdbool.h>
 #include "lexerDef.h"
-#define MAX_TERMINALS 59
 
 const char* terminalNames[MAX_TERMINALS] = {
     "TK_ASSIGNOP",
@@ -76,8 +75,8 @@ void removeComments(char *testcaseFile, char *cleanFile){//assumes char array te
     FILE* tcf=fopen(testcaseFile,"r");
     FILE*  cf=fopen(cleanFile,"w");
 
-    if(tcf==NULL||cf==NULL){
-        printf("Error: file %s or %s not found in directory",testcaseFile,cleanFile);
+    if(tcf==NULL){
+        printf("Error: file %s not found in directory",testcaseFile);
     }
     
     int flag=0;
@@ -87,7 +86,10 @@ void removeComments(char *testcaseFile, char *cleanFile){//assumes char array te
            flag=1;
         }
         if((flag==1)&&(temp=='\n')){flag=0;}
-        else if(!flag) fputc(temp,cf);
+        else if(!flag) {
+            if(cf!=NULL)fputc(temp,cf);
+            fputc(temp,stdout);
+        }
         temp=fgetc(tcf);
     }
     fclose(tcf);
@@ -724,7 +726,7 @@ tokenInfo getNextToken(twinBuffer* B, FILE* fp, lookuptbl* table){
 
 }
 
-HEAD tokenlist(twinBuffer* B, FILE* fp, lookuptbl* table){
+/*HEAD tokenlist(twinBuffer* B, FILE* fp, lookuptbl* table){
      HEAD list=(HEAD)malloc(sizeof(struct llhead));
      list->head=NULL;
      list->tail=NULL;
@@ -740,15 +742,15 @@ HEAD tokenlist(twinBuffer* B, FILE* fp, lookuptbl* table){
      while(tkinf.err){tkinf=getNextToken(B,fp,table);}
      }
      return list;
-}
+}*/
 
-void printtokenlist(HEAD list){
+/*void printtokenlist(HEAD list){
     NODE node= list->head;
     while(node!=NULL){
         printf("Token lexeme is %s and type is %s\n",node->tkinf.strlex,terminalNames[node->tkinf.tkid]);
         node=node->next;
     }
-}
+}*/
 
 //final state action order-
 //0) One mandatory retract in all final states, so that B->index now points to the last character seen to get to current state and not the next character to examine
@@ -771,6 +773,7 @@ void printtokenlist(HEAD list){
     token->lno=B->lno;
 }*/
 
+/*
 int main(){
     lookuptbl table[28];
     strcpy(table[0].keyw,"_main");table[0].tkid=TK_MAIN;
@@ -847,63 +850,5 @@ int main(){
     else printf("Line No %-5d : Error: Unknown Symbol <%s>\n",tkinf.lno,tkinf.strlex); 
     }
 
-
-
-
-
-    //printf("Buffer: %s\n", buffer->buf);
-    //printf("Index: %d\n", buffer->index);
-    //printf("Index character is %c\n",buffer->buf[buffer->index]);
-    //printf("Loaded buffer: %d\n\n", buffer->loadedbuf);
-
-    /*if(tkinf.tkid==TK_INT)printf("value of tkn is %d\n",tkinf.val.ival);
-    else if(tkinf.tkid==TK_REAL)printf("value of tkn is %f\n",tkinf.val.rval);
-    else printf("value of tkn is %s\n",tkinf.strlex);
-    printf("value of error %d\n",tkinf.err);*/
-
-    /*
-    printf("Buffer: %s\n", buffer->buf);
-    printf("Index: %d\n", buffer->index);
-    //printf("Character Number: %d\n", buffer->cno);
-    printf("Line Number: %d\n", buffer->lno);
-    printf("\n\n\n\n");
-    i--;*/
-
-
-
-
-
-
-    /*
-    buffer->index=29;
-    len=5;
-    tokenInfo tkinf=set_lexeme(buffer,len,TK_ID);
-    printf("floatval is %s\n",tkinf.lex.strlex);
-    printf("token type is %d\n",tkinf.tkid);
-    //tkinf= getNextToken(buffer,test);
-
-    //printf("value of tkn is %d\n",tkinf.lex.ival);
-
-    printf("Buffer: %s\n", buffer->buf);
-    printf("Index: %d\n", buffer->index);
-    //printf("Character Number: %d\n", buffer->cno);
-    printf("Line Number: %d\n", buffer->lno);
-
-    /*buffer->index=4;
-    len=7;
-    tokenInfo tkinf= set_lexeme(buffer,len,TK_ID);
-    printf("value of tkn is %s\n",tkinf.lex.strlex);
-
-    printf("Buffer: %s\n", buffer->buf);
-    printf("Index: %d\n", buffer->index);
-    //printf("Character Number: %d\n", buffer->cno);
-    printf("Line Number: %d\n", buffer->lno);
-
-
-    //buffer->index=2;
-    //tokenInfo tkinf=float_token(buffer,28);
-    //printf("%f\n",tkinf.lex.rval);
-    */
-
     return 0;
-}
+}*/
