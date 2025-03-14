@@ -5,6 +5,8 @@
 #include <string.h>
 #include <stdlib.h>
 
+#define MAX_TERMINALS 59
+
 typedef enum {
     TK_ASSIGNOP,
     TK_FIELDID,
