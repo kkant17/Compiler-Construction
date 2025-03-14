@@ -1,5 +1,5 @@
 driver: driver.o lexer.o
-	gcc -o driver driver.o lexer.o -lm
+	gcc -o driver driver.o lexer.o -lm -o3
 	rm *.o
 driver.o:
 	gcc -c driver.c
