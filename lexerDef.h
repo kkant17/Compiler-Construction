@@ -95,4 +95,14 @@ typedef struct lookuptbl{
     tk tkid;
 } lookuptbl;
 
+typedef struct llnode{
+    tokenInfo tkinf;
+    struct llnode* next;
+} * NODE;
+
+typedef struct llhead{
+    NODE head;
+    NODE tail;
+} * HEAD;
+
 #endif
