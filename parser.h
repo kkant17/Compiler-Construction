@@ -59,6 +59,7 @@ typedef enum {
     definetypestmt,
     A
 } NonTerminal;
+
 typedef union{
     NonTerminal n;
     tk t;
@@ -124,6 +125,14 @@ typedef struct {
     int capacity;
 } Stack;
 
+// Array to store grammar rules
+extern GrammarRule *grammarRules;
+extern int grammarRuleCount;
+
+// Array to store FIRST and FOLLOW sets
+extern FirstFollowSet *firstFollowSets;
+
+extern int nonTerminalCount;
 
 extern ParseTable *parseTable;
 
@@ -141,6 +150,7 @@ ParseTreeNode* create_non_terminal_node(NonTerminal nt);
 ParseTreeNode* create_terminal_node(tk token_type, const char* lexeme, int line);
 void add_child(ParseTreeNode* parent, ParseTreeNode* child);
 void free_parse_tree(ParseTreeNode* root);
+void print_parse_tree(const ParseTreeNode* node, int indent_level, const char** non_term_names, const char** term_names);
 Stack* createStack(int capacity);
 void push(Stack* stack, StackEntry entry);
 StackEntry pop(Stack* stack);
@@ -150,8 +160,5 @@ void freeStack(Stack* stack);
 int isInFirstSet(FirstFollowSet* F, NonTerminal nt, tk token);
 ParseTreeNode* parseInputSourceCode(char *testcaseFile, ParseTable* T, FirstFollowSet* F);
 int checkSynSet(tk token);
-void printNodeInfo(ParseTreeNode* node, ParseTreeNode* parent, FILE* file);
-void inOrderTraversal(ParseTreeNode* node, FILE* file, ParseTreeNode* parent);
-void printParseTree(ParseTreeNode* PT, char *outfile);
 
 #endif
