@@ -5,7 +5,7 @@
 #include <stdbool.h>
 #define NUMGRAMMAR 95
 #define MAX_LINE_LENGTH 1024
-#define MAX_TERMINALS 58
+#define MAX_TERMINALS 59
 #define MAX_NON_TERMINALS 53
 #define SYN_TOKENS 11
 
@@ -136,7 +136,8 @@ const char* terminalNamess[MAX_TERMINALS] = {
     "TK_GE",
     "TK_NE",
     "TK_EPS",
-    "TK_DOLLAR"
+    "TK_DOLLAR",
+    "TK_COMMENT"
 };
 
 tk syn_tokens[] = {
@@ -1570,23 +1571,6 @@ void free_parse_tree(ParseTreeNode* root) {
     free(root);
 }
 
-// Print parse tree
-void print_parse_tree(const ParseTreeNode* node, int indent_level,
-                     const char** non_term_names, const char** term_names) {
-    for (int i = 0; i < indent_level; i++) printf("  ");
-    
-    if (node->symbol.isTerminal) {
-        printf("%s", term_names[node->symbol.tk.t]);
-        if (node->node.terminal.lexeme) printf(" '%s'", node->node.terminal.lexeme);
-        printf(" (line %d)\n", node->node.terminal.line_number);
-    } else {
-        printf("%s\n", non_term_names[node->symbol.tk.n]);
-        for (int i = 0; i < node->node.non_terminal.child_count; i++) {
-            print_parse_tree(node->node.non_terminal.children[i], indent_level + 1, 
-                            non_term_names, term_names);
-        }
-    }
-}
 
 Stack* createStack(int capacity) {
     Stack* stack = (Stack*)malloc(sizeof(Stack));
@@ -2301,6 +2285,110 @@ ParseTreeNode* parseInputSourceCode(char *testcaseFile, ParseTable* T, FirstFoll
     return root;
 }
 
+//prints info of each node, helper for printing parse tree
+void printNodeInfo(ParseTreeNode* node, ParseTreeNode* parent, FILE* file) {
+    char lexeme[31] = "----";
+    int lineno = 0;
+    char tokenName[50] = "";
+    char valueIfNumber[50] = "---";
+    char currentNode[50] = "";
+    char parentSymbol[50] = "ROOT";
+    char isLeafNode[4] = "no";
+    char nodeSymbol[50] = "";
+
+
+    //filling the node info for terminals
+    if (node->symbol.isTerminal) {
+        if (node->node.terminal.lexeme != NULL) {
+            strcpy(lexeme,node->node.terminal.lexeme);
+        }
+        lineno = node->node.terminal.line_number;
+        strcpy(tokenName, terminalNamess[node->symbol.tk.t]);
+        strcpy(currentNode, terminalNamess[node->symbol.tk.t]);
+        strcpy(isLeafNode, "yes");
+        strcpy(nodeSymbol, "---");
+
+        //field only for numbers
+        if (node->symbol.tk.t == TK_NUM) {
+            int ival;
+            if (node->node.terminal.lexeme) {
+                ival = atoi(node->node.terminal.lexeme);
+            } else {
+                ival = 0;
+            }
+            sprintf(valueIfNumber, "%d", ival);
+        } else if (node->symbol.tk.t == TK_RNUM) {
+            float rval;
+            if (node->node.terminal.lexeme) {
+                rval = atof(node->node.terminal.lexeme);
+            } else {
+                rval = 0.0f;
+            }
+            sprintf(valueIfNumber, "%.2f", rval);
+        }
+    } 
+    //filling the node info for non terminals
+    else {
+        strcpy(tokenName, "---");
+        strcpy(isLeafNode, "no");
+        strcpy(nodeSymbol, nonterminalNamess[node->symbol.tk.n]);
+        strcpy(currentNode, nonterminalNamess[node->symbol.tk.n]);
+    }
+
+    // filling the parent symbol. If node is root, parent is ROOT
+    if (parent != NULL) {
+        if (parent->symbol.isTerminal) {
+            strcpy(parentSymbol, terminalNamess[parent->symbol.tk.t]);
+        } else {
+            strcpy(parentSymbol, nonterminalNamess[parent->symbol.tk.n]);
+        }
+    }
+
+    //write into file
+    fprintf(file, "%-25s %-30s %-10d %-20s %-10s %-30s %-10s %s\n",
+            lexeme, currentNode, lineno, tokenName, valueIfNumber, parentSymbol, isLeafNode, nodeSymbol);
+}
+
+
+//inorder traversal of parse tree, Helper for printing parse tree
+void inOrderTraversal(ParseTreeNode* node, FILE* file, ParseTreeNode* parent) {
+    if (node == NULL) {
+        return;
+    }
+
+    if (!node->symbol.isTerminal) {
+        int child_count = node->node.non_terminal.child_count;
+        if (child_count > 0) {
+            inOrderTraversal(node->node.non_terminal.children[0], file, node);
+        }
+
+        printNodeInfo(node, parent, file);
+
+        for (int i = 1; i < child_count; i++) {
+            inOrderTraversal(node->node.non_terminal.children[i], file, node);
+        }
+    } else {
+        printNodeInfo(node, parent, file);
+    }
+}
+
+//writes the parse tree into input file, making use of inorder traversal and printnode helper functions
+void printParseTree(ParseTreeNode* PT, char *outfile) {
+    FILE* file = fopen(outfile, "w");
+    if (file == NULL) {
+        printf("Could not open the file for writing tree\n");
+        return;
+    }
+
+    fprintf(file, "%-25s %-30s %-10s %-15s %-15s %-25s %-15s %s\n",
+            "Lexeme","CurrentNode", "LineNo", "TokenName", "ValueIfNumber", "ParentNodeSymbol", "IsLeafNode", "NodeSymbol");
+
+    //inorder traversal function prints all the node information in order.
+    inOrderTraversal(PT, file, NULL);
+
+    fclose(file);
+}
+
 
 int main() {
 
@@ -2313,9 +2401,10 @@ int main() {
     //printGrammarRules();
     createParseTable(firstFollowSets, &parseTable);
     // printParseTable(parseTable, nonterminalNamess, terminalNamess); 
-    char* myfile="t6.txt";
+    char* myfile="t3.txt";
     ParseTreeNode *mytree=parseInputSourceCode(myfile,parseTable,firstFollowSets);
-    // print_parse_tree(mytree, 0, nonterminalNamess, terminalNamess);
+    char* parse_tree="output.txt";
+    printParseTree(mytree,parse_tree);
 
     //test=getStream(buffer,test,0);
     //test=getStream(buffer,test,1);
