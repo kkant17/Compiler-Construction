@@ -1,4 +1,5 @@
-#include "lexer.h"
+#include "leggser.h"
+#include "parser.h"
 
 int main(){
     lookuptbl table[28];
@@ -73,5 +74,23 @@ int main(){
     }
     }
     else if(option==0)return 0;
+    else if(option==3){
+        printf("hello testing\n");
+    FirstFollowSet* firstFollowSets = ComputeFirstFollowSets();
+    //printf("\nPrinting FIRST sets:\n");
+    //printf("===================\n");
+   // printFirstSets();
+    storeGrammarRules(); 
+    //printGrammarRules();
+    createParseTable(firstFollowSets, &parseTable);
+    // printParseTable(parseTable, nonterminalNames, terminalNames); 
+    char* myfile="t6.txt";
+    ParseTreeNode *mytree=parseInputSourceCode(myfile,parseTable,firstFollowSets);
+    char* parseTreeFile="t1.txt";
+    printParseTree(mytree,parseTreeFile);
+
+    //test=getStream(buffer,test,0);
+    //test=getStream(buffer,test,1);
+    }
     }
 }
