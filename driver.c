@@ -1,4 +1,4 @@
-#include "leggser.h"
+#include "lexer.h"
 #include "parser.h"
 
 int main(){
