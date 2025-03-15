@@ -1,7 +1,7 @@
 #ifndef PARSER_H
 #define PARSER_H
 #include <stdbool.h>
-#include "lexer.h"
+#include "leggser.h"
 
 
 typedef enum {
@@ -123,6 +123,9 @@ typedef struct {
     int top;
     int capacity;
 } Stack;
+
+
+extern ParseTable *parseTable;
 
 // Function prototypes
 void storeGrammarRules();
