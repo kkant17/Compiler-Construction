@@ -62,8 +62,8 @@ const char* terminalNames[MAX_TERMINALS] = {
     "TK_GT",
     "TK_GE",
     "TK_NE",
-    "TK_DOLLAR",
     "TK_EPS",
+    "TK_DOLLAR",
     "TK_COMMENT"
 };
 
