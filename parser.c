@@ -1570,6 +1570,24 @@ void free_parse_tree(ParseTreeNode* root) {
     free(root);
 }
 
+// Print parse tree
+void print_parse_tree(const ParseTreeNode* node, int indent_level,
+                     const char** non_term_names, const char** term_names) {
+    for (int i = 0; i < indent_level; i++) printf("  ");
+    
+    if (node->symbol.isTerminal) {
+        printf("%s", term_names[node->symbol.tk.t]);
+        if (node->node.terminal.lexeme) printf(" '%s'", node->node.terminal.lexeme);
+        printf(" (line %d)\n", node->node.terminal.line_number);
+    } else {
+        printf("%s\n", non_term_names[node->symbol.tk.n]);
+        for (int i = 0; i < node->node.non_terminal.child_count; i++) {
+            print_parse_tree(node->node.non_terminal.children[i], indent_level + 1, 
+                            non_term_names, term_names);
+        }
+    }
+}
+
 Stack* createStack(int capacity) {
     Stack* stack = (Stack*)malloc(sizeof(Stack));
     stack->capacity = capacity;
@@ -1612,6 +1630,327 @@ int isInFirstSet(FirstFollowSet* F, NonTerminal nt, tk token) {
     }
     return 0;
 }
+
+// ParseTreeNode* parseInputSourceCode(char *testcaseFile, ParseTable* T, FirstFollowSet* F) {
+//     /*if (initLexer(testcaseFile)) {
+//         fprintf(stderr, "Error initializing lexer\n");
+//         return NULL;
+//     }*/
+//     lookuptbl table[28];
+//     strcpy(table[0].keyw,"_main");table[0].tkid=TK_MAIN;
+//     strcpy(table[1].keyw,"as");table[1].tkid=TK_AS;
+//     strcpy(table[2].keyw,"call");table[2].tkid=TK_CALL;
+//     strcpy(table[3].keyw,"definetype");table[3].tkid=TK_DEFINETYPE;
+//     strcpy(table[4].keyw,"else");table[4].tkid=TK_ELSE;
+//     strcpy(table[5].keyw,"end");table[5].tkid=TK_END;
+//     strcpy(table[6].keyw,"endif");table[6].tkid=TK_ENDIF;
+//     strcpy(table[7].keyw,"endrecord");table[7].tkid=TK_ENDRECORD;
+//     strcpy(table[8].keyw,"endunion");table[8].tkid=TK_ENDUNION;
+//     strcpy(table[9].keyw,"endwhile");table[9].tkid=TK_ENDWHILE;
+//     strcpy(table[10].keyw,"global");table[10].tkid=TK_GLOBAL;
+//     strcpy(table[11].keyw,"if");table[11].tkid=TK_IF;
+//     strcpy(table[12].keyw,"input");table[12].tkid=TK_INPUT;
+//     strcpy(table[13].keyw,"int");table[13].tkid=TK_INT;
+//     strcpy(table[14].keyw,"list");table[14].tkid=TK_LIST;
+//     strcpy(table[15].keyw,"output");table[15].tkid=TK_OUTPUT;
+//     strcpy(table[16].keyw,"parameter");table[16].tkid=TK_PARAMETER;
+//     strcpy(table[17].keyw,"parameters");table[17].tkid=TK_PARAMETERS;
+//     strcpy(table[18].keyw,"read");table[18].tkid=TK_READ;
+//     strcpy(table[19].keyw,"real");table[19].tkid=TK_REAL;
+//     strcpy(table[20].keyw,"record");table[20].tkid=TK_RECORD;
+//     strcpy(table[21].keyw,"return");table[21].tkid=TK_RETURN;
+//     strcpy(table[22].keyw,"then");table[22].tkid=TK_THEN;
+//     strcpy(table[23].keyw,"type");table[23].tkid=TK_TYPE;
+//     strcpy(table[24].keyw,"union");table[24].tkid=TK_UNION;
+//     strcpy(table[25].keyw,"while");table[25].tkid=TK_WHILE;
+//     strcpy(table[26].keyw,"with");table[26].tkid=TK_WITH;
+//     strcpy(table[27].keyw,"write");table[27].tkid=TK_WRITE;
+
+
+//     twinBuffer* buffer;
+//     buffer=(twinBuffer *)malloc(sizeof(twinBuffer));
+//     buffer->lno=1;
+//     buffer->index=0;
+//     buffer->loadedbuf=-1;
+//     FILE* codefile=fopen(testcaseFile,"r");
+//     // int dollar_flag = 0;
+//     tokenInfo currentToken = getNextToken(buffer,codefile,table);
+    
+//     while (currentToken.tkid==TK_COMMENT){
+//         currentToken = getNextToken(buffer,codefile,table);
+//     }
+//     // if(currentToken.tkid == TK_DOLLAR) dollar_flag = 1;
+
+//     while(currentToken.err) {
+//         if(currentToken.err==1) {
+//             printf("Line No %-5d : Error: Unknown Symbol <%s>\n",currentToken.lno,currentToken.strlex); 
+//         }
+//         else if(currentToken.err==2) {
+//             printf("Line no: %-5d : Error: Unknown pattern <%s>\n",currentToken.lno,currentToken.strlex); 
+//         }
+//         if(currentToken.err==3) {
+//             if(currentToken.tkid==TK_NUM){
+//                           printf("Line No %-5d : Error :Integer is longer than the maximum length of 30 digits\n",currentToken.lno);
+//                          }
+//                          else if(currentToken.tkid==TK_RNUM){
+//                           printf("Line No %-5d : Error :Floating-point number is longer than the maximum length of 30 characters\n",currentToken.lno);
+//                          }
+//                          else if(currentToken.tkid==TK_ID){
+//                           printf("Line No %-5d : Error :Variable is longer than the prescribed length of 20 characters\n",currentToken.lno);
+//                          }
+//                          else{
+//                           printf("Line No %-5d : Error :Record, union, field or function identifier is longer than the maximum length of 30 characters\n",currentToken.lno);
+//                          } 
+//         }
+//         currentToken = getNextToken(buffer,codefile,table);
+//         // if(currentToken.tkid == TK_DOLLAR) dollar_flag = 1;
+        
+//     }
+//     ParseTreeNode* root = NULL;
+//     Stack* stack = createStack(100);
+
+//     // Push the start symbol onto the stack
+//     StackEntry startEntry;
+//     startEntry.isTerminal = false;
+//     startEntry.symbol.nt = program; // Start symbol
+//     startEntry.parent = NULL;
+//     push(stack, startEntry);
+
+//     int errorFlag = 0;
+//     int print_error = 1;
+    
+//     while (!isEmpty(stack) || currentToken.tkid != TK_DOLLAR) {
+//         StackEntry entry = pop(stack);
+        
+//         if (!entry.isTerminal) {
+            
+//             NonTerminal nt = entry.symbol.nt;
+//             tk tokenType = currentToken.tkid;
+//             ParseTableCell* cell = T->cells[nt][tokenType];
+
+//             if (cell->rulePresent) {
+//                 // Valid rule: expand non-terminal and add to parse tree
+//                 ParseTreeNode* node = create_non_terminal_node(nt);
+//                 if (!entry.parent) root = node;
+//                 else add_child(entry.parent, node);
+//                 // Push RHS symbols in reverse order
+//                 for (int i = cell->rule->rhsCount - 1; i >= 0; i--) {
+//                     Token symbol = cell->rule->rhs[i];
+//                     if (symbol.isTerminal){ 
+//                         if (symbol.tk.t == TK_EPS){
+//                             ParseTreeNode* termNode = create_terminal_node(
+//                                 currentToken.tkid, NULL, currentToken.lno
+//                             );
+//                             add_child(node, termNode);
+//                             continue;
+//                         };
+//                     }
+//                     print_error = 1;
+//                     StackEntry newEntry;
+//                     newEntry.isTerminal = symbol.isTerminal;
+//                     newEntry.parent = node;
+//                     if (symbol.isTerminal){ 
+//                         newEntry.symbol.terminal = symbol.tk.t;
+//                     }
+//                     else newEntry.symbol.nt = symbol.tk.n;
+//                     push(stack, newEntry);
+//                 }
+//             } else if (cell->syn) {
+//                 printf("SYN Error at line %d: Unexpected '%s'. Popping until token in FIRST(top of stack).\n",
+//                        currentToken.lno, terminalNamess[tokenType]);
+//                 errorFlag = 1;
+//                 // syn error handling
+//                 entry = pop(stack);
+//                 while(1){
+//                 if (entry.isTerminal){
+//                 if(entry.symbol.terminal == currentToken.tkid){
+//                     currentToken = getNextToken(buffer,codefile,table);
+//                     break;
+//                 }
+//                     entry = pop(stack);
+//             }
+//                 else if(!isInFirstSet(F, entry.symbol.nt, tokenType)) 
+//                     entry = pop(stack);
+//                 else break;
+//         }
+//                 while (currentToken.tkid==TK_COMMENT) {
+//                     currentToken = getNextToken(buffer,codefile,table);
+//                     // if(currentToken.tkid == TK_DOLLAR) dollar_flag = 1;
+//                 }
+//                 while(currentToken.err) {
+//                     if(currentToken.err==1) {
+//                         printf("Line No %-5d : Error: Unknown Symbol <%s>\n",currentToken.lno,currentToken.strlex); 
+//                     }
+//                     else if(currentToken.err==2) {
+//                         printf("Line no: %-5d : Error: Unknown pattern <%s>\n",currentToken.lno,currentToken.strlex); 
+//                     }
+//                     if(currentToken.err==3) {
+//                         if(currentToken.tkid==TK_NUM){
+//                                       printf("Line No %-5d : Error :Integer is longer than the maximum length of 30 digits\n",currentToken.lno);
+//                                      }
+//                                      else if(currentToken.tkid==TK_RNUM){
+//                                       printf("Line No %-5d : Error :Floating-point number is longer than the maximum length of 30 characters\n",currentToken.lno);
+//                                      }
+//                                      else if(currentToken.tkid==TK_ID){
+//                                       printf("Line No %-5d : Error :Variable is longer than the prescribed length of 20 characters\n",currentToken.lno);
+//                                      }
+//                                      else{
+//                                       printf("Line No %-5d : Error :Record, union, field or function identifier is longer than the maximum length of 30 characters\n",currentToken.lno);
+//                                      } 
+//                     }
+//                     currentToken = getNextToken(buffer,codefile,table);
+//                     // if(currentToken.tkid == TK_DOLLAR) dollar_flag = 1;
+                    
+//                 print_error = 1;
+//                 }
+//                 printf("current token = %s",terminalNamess[currentToken.tkid]);
+//             } else {
+//                 if(print_error){
+//                     printf("Error at line %d: Unexpected '%s' for %s. Skipping until FIRST(%s) or synchronizing token.\n",
+//                        currentToken.lno, terminalNamess[tokenType], nonterminalNamess[nt], nonterminalNamess[nt]);
+//                     print_error = 0;
+//                 }
+//                 errorFlag = 1;
+
+//                  currentToken = getNextToken(buffer,codefile,table);
+//                 //  if(currentToken.tkid == TK_DOLLAR) dollar_flag = 1;
+//                 // printf("current token is %s\n",terminalNamess[currentToken.tkid]);
+                
+//                 while (currentToken.tkid==TK_COMMENT) {
+//                     currentToken = getNextToken(buffer,codefile,table);
+//                 }
+//                 while(currentToken.err) {
+//                     if(currentToken.err==1) {
+//                         printf("Line No %-5d : Error: Unknown Symbol <%s>\n",currentToken.lno,currentToken.strlex); 
+//                     }
+//                     else if(currentToken.err==2) {
+//                         printf("Line no: %-5d : Error: Unknown pattern <%s>\n",currentToken.lno,currentToken.strlex); 
+//                     }
+//                     if(currentToken.err==3) {
+//                         if(currentToken.tkid==TK_NUM){
+//                                       printf("Line No %-5d : Error :Integer is longer than the maximum length of 30 digits\n",currentToken.lno);
+//                                      }
+//                                      else if(currentToken.tkid==TK_RNUM){
+//                                       printf("Line No %-5d : Error :Floating-point number is longer than the maximum length of 30 characters\n",currentToken.lno);
+//                                      }
+//                                      else if(currentToken.tkid==TK_ID){
+//                                       printf("Line No %-5d : Error :Variable is longer than the prescribed length of 20 characters\n",currentToken.lno);
+//                                      }
+//                                      else{
+//                                       printf("Line No %-5d : Error :Record, union, field or function identifier is longer than the maximum length of 30 characters\n",currentToken.lno);
+//                                      } 
+//                     }
+//                     currentToken = getNextToken(buffer,codefile,table);
+//                     // if(currentToken.tkid == TK_DOLLAR) dollar_flag = 1;
+                    
+//                 }
+
+//                 // Re-push the non-terminal to retry parsing
+//                 StackEntry retryEntry;
+//                 retryEntry.isTerminal = false;
+//                 retryEntry.symbol.nt = nt;
+//                 retryEntry.parent = entry.parent;
+//                 // if(!dollar_flag)
+//                 push(stack, retryEntry);
+//             }
+//         } else {
+//             // Handle terminal symbol
+//             tk expected = entry.symbol.terminal;
+//             // printf("Expected at this position is %s\tActual is %s\n",terminalNamess[expected],terminalNamess[currentToken.tkid]);
+//             if (expected == currentToken.tkid) {
+//                 // Add terminal node to the parse tree
+//                 printf("Matched %s\n", terminalNamess[expected]);
+//                 char lexemeStr[30];
+//                 if (currentToken.tkid == TK_NUM) snprintf(lexemeStr, 30, "%d", currentToken.val.ival);
+//                 else if (currentToken.tkid == TK_RNUM) snprintf(lexemeStr, 30, "%.2f", currentToken.val.rval);
+//                 else strncpy(lexemeStr, currentToken.strlex, 30);
+
+//                 ParseTreeNode* termNode = create_terminal_node(
+//                     currentToken.tkid, lexemeStr, currentToken.lno
+//                 );
+//                 add_child(entry.parent, termNode);
+//                 currentToken = getNextToken(buffer,codefile,table);
+//                 // if(currentToken.tkid == TK_DOLLAR) dollar_flag = 1;
+//                 while(currentToken.tkid==TK_COMMENT){
+//                     currentToken=getNextToken(buffer,codefile,table);
+//                     // if(currentToken.tkid == TK_DOLLAR) dollar_flag = 1;
+//                 }
+//                 while(currentToken.err) {
+//                     if(currentToken.err==1) {
+//                         printf("Line No %-5d : Error: Unknown Symbol <%s>\n",currentToken.lno,currentToken.strlex); 
+//                     }
+//                     else if(currentToken.err==2) {
+//                         printf("Line no: %-5d : Error: Unknown pattern <%s>\n",currentToken.lno,currentToken.strlex); 
+//                     }
+//                     if(currentToken.err==3) {
+//                         if(currentToken.tkid==TK_NUM){
+//                                       printf("Line No %-5d : Error :Integer is longer than the maximum length of 30 digits\n",currentToken.lno);
+//                                      }
+//                                      else if(currentToken.tkid==TK_RNUM){
+//                                       printf("Line No %-5d : Error :Floating-point number is longer than the maximum length of 30 characters\n",currentToken.lno);
+//                                      }
+//                                      else if(currentToken.tkid==TK_ID){
+//                                       printf("Line No %-5d : Error :Variable is longer than the prescribed length of 20 characters\n",currentToken.lno);
+//                                      }
+//                                      else{
+//                                       printf("Line No %-5d : Error :Record, union, field or function identifier is longer than the maximum length of 30 characters\n",currentToken.lno);
+//                                      } 
+//                     }
+//                     currentToken = getNextToken(buffer,codefile,table);
+//                     // if(currentToken.tkid == TK_DOLLAR) dollar_flag = 1;
+//                 }
+//             } 
+//             else {
+//                 // Terminal mismatch error
+//                 printf("Syntax Error at line %d: Expected '%s', found '%s'\n",
+//                        currentToken.lno, terminalNamess[expected], terminalNamess[currentToken.tkid]);
+//                 push(stack, entry);
+//                 // currentToken = getNextToken(buffer,codefile,table);
+//                 // while(currentToken.tkid != expected && currentToken.tkid != TK_DOLLAR) {
+//                 //     currentToken = getNextToken(buffer,codefile,table);
+//                 // }
+//                 // if(currentToken.tkid == TK_DOLLAR) dollar_flag = 1;
+//                 int syn_flag = 0;
+//                 while(!syn_flag){
+//                 for(int i = 0; i < SYN_TOKENS; i++){
+//                     if(currentToken.tkid == syn_tokens[i]){
+//                         syn_flag = 1;
+//                         break;
+//                         // if(currentToken.tkid == TK_DOLLAR) dollar_flag = 1;
+//                     }
+//                 }
+//                 // printf("syn flag = %d\n", syn_flag);
+//                 if(!syn_flag) {
+//                     currentToken = getNextToken(buffer,codefile,table);
+//                     continue;
+//                 }
+//             }
+//             while(entry.symbol.terminal != currentToken.tkid && currentToken.tkid != TK_DOLLAR) {
+//                 entry = pop(stack);
+//              }
+//             currentToken = getNextToken(buffer,codefile,table);
+//                 errorFlag = 1;
+                            
+//             }
+//         }
+//     }
+//     // Final checks
+//     if (currentToken.tkid != TK_DOLLAR && !errorFlag) {
+//         printf("Unexpected token '%s' at line %d after valid parse\n",
+//                terminalNamess[currentToken.tkid], currentToken.lno);
+//         errorFlag = 1;
+//     }
+
+//     freeStack(stack);
+
+//     if (!errorFlag) {
+//         printf("Input source code is syntactically correct.\n");
+//     } else {
+//         free_parse_tree(root);
+//         root = NULL;
+//     }
+//     return root;
+// }
 
 int checkSynSet(tk token) {
     for (int i = 0; i < SYN_TOKENS; i++) {
@@ -1962,109 +2301,6 @@ ParseTreeNode* parseInputSourceCode(char *testcaseFile, ParseTable* T, FirstFoll
     return root;
 }
 
-//prints info of each node, helper for printing parse tree
-void printNodeInfo(ParseTreeNode* node, ParseTreeNode* parent, FILE* file) {
-    char lexeme[31] = "----";
-    int lineno = 0;
-    char tokenName[50] = "";
-    char valueIfNumber[50] = "---";
-    char currentNode[50] = "";
-    char parentSymbol[50] = "ROOT";
-    char isLeafNode[4] = "no";
-    char nodeSymbol[50] = "";
-
-
-    //filling the node info for terminals
-    if (node->symbol.isTerminal) {
-        if (node->node.terminal.lexeme != NULL) {
-            strcpy(lexeme,node->node.terminal.lexeme);
-        }
-        lineno = node->node.terminal.line_number;
-        strcpy(tokenName, terminalNames[node->symbol.tk.t]);
-        strcpy(currentNode, terminalNames[node->symbol.tk.t]);
-        strcpy(isLeafNode, "yes");
-        strcpy(nodeSymbol, "---");
-
-        //field only for numbers
-        if (node->symbol.tk.t == TK_NUM) {
-            int ival;
-            if (node->node.terminal.lexeme) {
-                ival = atoi(node->node.terminal.lexeme);
-            } else {
-                ival = 0;
-            }
-            sprintf(valueIfNumber, "%d", ival);
-        } else if (node->symbol.tk.t == TK_RNUM) {
-            float rval;
-            if (node->node.terminal.lexeme) {
-                rval = atof(node->node.terminal.lexeme);
-            } else {
-                rval = 0.0f;
-            }
-            sprintf(valueIfNumber, "%.2f", rval);
-        }
-    } 
-    //filling the node info for non terminals
-    else {
-        strcpy(tokenName, "---");
-        strcpy(isLeafNode, "no");
-        strcpy(nodeSymbol, nonTerminalNames[node->symbol.tk.n]);
-        strcpy(currentNode, nonTerminalNames[node->symbol.tk.n]);
-    }
-
-    // filling the parent symbol. If node is root, parent is ROOT
-    if (parent != NULL) {
-        if (parent->symbol.isTerminal) {
-            strcpy(parentSymbol, terminalNames[parent->symbol.tk.t]);
-        } else {
-            strcpy(parentSymbol, nonTerminalNames[parent->symbol.tk.n]);
-        }
-    }
-
-    //write into file
-    fprintf(file, "%-25s %-30s %-10d %-20s %-10s %-30s %-10s %s\n",
-            lexeme, currentNode, lineno, tokenName, valueIfNumber, parentSymbol, isLeafNode, nodeSymbol);
-}
-
-
-//inorder traversal of parse tree, Helper for printing parse tree
-void inOrderTraversal(ParseTreeNode* node, FILE* file, ParseTreeNode* parent) {
-    if (node == NULL) {
-        return;
-    }
-
-    if (!node->symbol.isTerminal) {
-        int child_count = node->node.non_terminal.child_count;
-        if (child_count > 0) {
-            inOrderTraversal(node->node.non_terminal.children[0], file, node);
-        }
-
-        printNodeInfo(node, parent, file);
-
-        for (int i = 1; i < child_count; i++) {
-            inOrderTraversal(node->node.non_terminal.children[i], file, node);
-        }
-    } else {
-        printNodeInfo(node, parent, file);
-    }
-}
-
-//writes the parse tree into input file, making use of inorder traversal and printnode helper functions
-void printParseTree(ParseTreeNode* PT, char *outfile) {
-    FILE* file = fopen(outfile, "w");
-    if (file == NULL) {
-        printf("Could not open the file for writing tree\n");
-        return;
-    }
-
-    fprintf(file, "%-25s %-30s %-10s %-15s %-15s %-25s %-15s %s\n",
-            "Lexeme","CurrentNode", "LineNo", "TokenName", "ValueIfNumber", "ParentNodeSymbol", "IsLeafNode", "NodeSymbol");
-
-    //inorder traversal function prints all the node information in order.
-    inOrderTraversal(PT, file, NULL);
-
-    fclose(file);
-}
 
 int main() {
 
@@ -2079,8 +2315,7 @@ int main() {
     // printParseTable(parseTable, nonterminalNamess, terminalNamess); 
     char* myfile="t6.txt";
     ParseTreeNode *mytree=parseInputSourceCode(myfile,parseTable,firstFollowSets);
-    char* parseTreeFile="t1.txt";
-    printParseTree(mytree,parseTreeFile);
+    // print_parse_tree(mytree, 0, nonterminalNamess, terminalNamess);
 
     //test=getStream(buffer,test,0);
     //test=getStream(buffer,test,1);
