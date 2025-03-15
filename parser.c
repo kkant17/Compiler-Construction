@@ -1,12 +1,12 @@
-#include "parser.h"
-#include <errno.h>
+#include "parserDef.h"
 #include <ctype.h>
 #include <string.h>
 #include <stdbool.h>
 #define NUMGRAMMAR 95
 #define MAX_LINE_LENGTH 1024
-#define MAX_TERMINALS 58
+// #define MAX_TERMINALS 58
 #define MAX_NON_TERMINALS 53
+#define SYN_TOKENS 11
 
 // Array to store grammar rules
 GrammarRule *grammarRules;
@@ -20,7 +20,7 @@ int nonTerminalCount = 0;
 ParseTable *parseTable = NULL;
 
 // ==================== Non-Terminal Names ====================
-const char* nonTerminalNames[MAX_NON_TERMINALS] = {
+const char* nonterminalNamess[MAX_NON_TERMINALS] = {
     "<program>",
     "<mainFunction>",
     "<otherFunctions>",
@@ -77,7 +77,7 @@ const char* nonTerminalNames[MAX_NON_TERMINALS] = {
 };
 
 // ===================== Terminal Names =====================
-const char* terminalNames[MAX_TERMINALS] = {
+/*const char* terminalNamess[MAX_TERMINALS] = {
     "TK_ASSIGNOP",
     "TK_FIELDID",
     "TK_ID",
@@ -136,20 +136,34 @@ const char* terminalNames[MAX_TERMINALS] = {
     "TK_NE",
     "TK_EPS",
     "TK_DOLLAR"
-};
+};*/
+
+tk syn_tokens[] = {
+    TK_SEM,
+    TK_ENDRECORD,
+    TK_SQR,
+    TK_ENDIF,
+    TK_ENDWHILE,
+    TK_ENDUNION,
+    TK_ELSE,
+    TK_END,
+    TK_AND,
+    TK_OR,
+    TK_CL
+} ;
 
 void storeGrammarRules() {
     FILE *file = fopen("updated_rules.txt", "r");
     if (!file) {
-        fprintf(stderr, "Error opening Parsed Grammar.txt: %s\n", strerror(errno));
-        exit(EXIT_FAILURE);
+        printf("Error opening updated_rules.txt \n");
+        exit(1);
     }
 
     grammarRules = malloc(sizeof(GrammarRule) * NUMGRAMMAR);
     if (!grammarRules) {
-        perror("Memory allocation failed for grammarRules");
+        printf("Memory allocation failed for grammar rules\n");
         fclose(file);
-        exit(EXIT_FAILURE);
+        exit(1);
     }
 
     char line[MAX_LINE_LENGTH];
@@ -157,23 +171,21 @@ void storeGrammarRules() {
 
     while (fgets(line, sizeof(line), file)) {
 
-        //printf("Processing line: %s\n", line);
 
         char *lhsToken = strtok(line, " ");
         char *rhsToken = strtok(NULL, "===");
 
         if (lhsToken) {
-            // Trim leading and trailing spaces from lhsToken
+            // string manipulation to get the LHS correctly.
             while (isspace((unsigned char)*lhsToken)) lhsToken++;
             char *end = lhsToken + strlen(lhsToken) - 1;
             while (end > lhsToken && isspace((unsigned char)*end)) end--;
             *(end + 1) = '\0';
         }
 
-        //printf("LHS: %s, RHS: %s\n", lhsToken, rhsToken);
-
         if (lhsToken && rhsToken) {
             NonTerminal lhs;
+            //assigns the LHS nonterminal
             if (strcmp(lhsToken, "<program>") == 0) {
                 lhs = program;
             }
@@ -335,10 +347,11 @@ void storeGrammarRules() {
             }
             grammarRules[ruleNumber].ruleNumber = ruleNumber;
             grammarRules[ruleNumber].lhs = lhs;
-            grammarRules[ruleNumber].rhs = NULL; // Initialize to NULL
+            grammarRules[ruleNumber].rhs = NULL;
 
             char *rhs = strtok(rhsToken, " ");
             int rhsCount = 0;
+            //assigning RHS
             while (rhs) {
                 size_t len = strlen(rhs);
                 while (len > 0 && (rhs[len - 1] == '\n' || rhs[len - 1] == '\r' || rhs[len - 1] == ' ')) {
@@ -346,13 +359,14 @@ void storeGrammarRules() {
                 }
                 Token *newRhs = realloc(grammarRules[ruleNumber].rhs, sizeof(Token) * (rhsCount + 1));
                 if (!newRhs) {
-                    perror("Memory allocation failed for RHS tokens");
+                    printf("Memory allocation failed for RHS tokens");
                     free(grammarRules[ruleNumber].rhs);
                     fclose(file);
-                    exit(EXIT_FAILURE);
+
                 }
                 grammarRules[ruleNumber].rhs = newRhs;
 
+                //ifelse for assigning the nonterminals, sets isTerminal field to 0
                 if (strcmp(rhs, "<program>") == 0) {
                     grammarRules[ruleNumber].rhs[rhsCount].tk.n = program;
                     grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 0;
@@ -565,6 +579,7 @@ void storeGrammarRules() {
                     grammarRules[ruleNumber].rhs[rhsCount].tk.n = A;
                     grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 0;
                 }
+                //ifelse for assigning Terminals, isTerminal set to 1
                 else if (strcmp(rhs,"TK_ASSIGNOP") == 0) {
                     grammarRules[ruleNumber].rhs[rhsCount].tk.t = TK_ASSIGNOP;
                     grammarRules[ruleNumber].rhs[rhsCount].isTerminal = 1;
@@ -807,7 +822,7 @@ void storeGrammarRules() {
 }
 
 
-
+//helper function just to view the stored grammar rules
 void printGrammarRules() {
     for (int i = 0; i < grammarRuleCount; i++) {
         printf("Rule %d: ", grammarRules[i].ruleNumber);
@@ -815,14 +830,16 @@ void printGrammarRules() {
 
         for (int j = 0; j < grammarRules[i].rhsCount; j++) {
             if (grammarRules[i].rhs[j].isTerminal) {
-                printf("TK_%d ", grammarRules[i].rhs[j].tk.t); // Print terminal token
+                printf("TK_%d ", grammarRules[i].rhs[j].tk.t);
             } else {
-                printf("<%d> ", grammarRules[i].rhs[j].tk.n); // Print non-terminal
+                printf("<%d> ", grammarRules[i].rhs[j].tk.n);
             }
         }
         printf("\n");
     }
 }
+
+//helper function to print the first and follow sets
 void printFirstSets() {
     if (!firstFollowSets) {
         printf("First sets not initialized!\n");
@@ -830,12 +847,12 @@ void printFirstSets() {
     }
 
     for (int i = 0; i < MAX_NON_TERMINALS; i++) {
-        printf("FIRST(%s): { ", nonTerminalNames[i]);
+        printf("FIRST(%s): { ", nonterminalNamess[i]);
         for (int j = 0; j < firstFollowSets[i].firstCount; j++) {
             // Print the terminal name if it's within valid range
             if (firstFollowSets[i].firstSet[j] >= 0 && 
-                firstFollowSets[i].firstSet[j] < sizeof(terminalNames)/sizeof(terminalNames[0])) {
-                printf("%s", terminalNames[firstFollowSets[i].firstSet[j]]);
+                firstFollowSets[i].firstSet[j] < sizeof(terminalNamess)/sizeof(terminalNamess[0])) {
+                printf("%s", terminalNamess[firstFollowSets[i].firstSet[j]]);
                 if (j < firstFollowSets[i].firstCount - 1) {
                     printf(", ");
                 }
@@ -846,7 +863,7 @@ void printFirstSets() {
     printf("\nPrinting FOLLOW sets:\n");
     printf("===================\n");
     for (int i = 0; i < MAX_NON_TERMINALS; i++) {
-        printf("FOLLOW(%s): { ", nonTerminalNames[i]);
+        printf("FOLLOW(%s): { ", nonterminalNamess[i]);
         for (int j = 0; j < firstFollowSets[i].followCount; j++) {
             if (firstFollowSets[i].followSet[j] == TK_DOLLAR) {
                 printf("$");
@@ -857,8 +874,8 @@ void printFirstSets() {
             }
             
             if (firstFollowSets[i].followSet[j] >= 0 && 
-                firstFollowSets[i].followSet[j] < sizeof(terminalNames)/sizeof(terminalNames[0])) {
-                printf("%s", terminalNames[firstFollowSets[i].followSet[j]]);
+                firstFollowSets[i].followSet[j] < sizeof(terminalNamess)/sizeof(terminalNamess[0])) {
+                printf("%s", terminalNamess[firstFollowSets[i].followSet[j]]);
                 if (j < firstFollowSets[i].followCount - 1) {
                     printf(", ");
                 }
@@ -868,6 +885,7 @@ void printFirstSets() {
     }
 }
 
+//First and follow sets were computed by our team before beginning coding, so the values are hardcoded here based on our manual computation.
 FirstFollowSet* ComputeFirstFollowSets() {
     firstFollowSets = malloc(sizeof(FirstFollowSet) * NUMGRAMMAR);
 
@@ -877,7 +895,7 @@ FirstFollowSet* ComputeFirstFollowSets() {
         firstFollowSets[i].firstCount = 0;
         firstFollowSets[i].followCount = 0;
     }
-
+    //firsets
     firstFollowSets[program].firstSet[firstFollowSets[program].firstCount++] = TK_FUNID;
     firstFollowSets[program].firstSet[firstFollowSets[program].firstCount++] = TK_MAIN;
     firstFollowSets[mainFunction].firstSet[firstFollowSets[mainFunction].firstCount++] = TK_MAIN;
@@ -1021,7 +1039,7 @@ FirstFollowSet* ComputeFirstFollowSets() {
     firstFollowSets[A].firstSet[firstFollowSets[A].firstCount++] = TK_RECORD;
 
 
-    // Hardcode the FOLLOW sets
+    //followsets
     firstFollowSets[program].followSet[firstFollowSets[program].followCount++] = TK_DOLLAR;
     firstFollowSets[mainFunction].followSet[firstFollowSets[mainFunction].followCount++] = TK_DOLLAR;
     firstFollowSets[otherFunctions].followSet[firstFollowSets[otherFunctions].followCount++] = TK_MAIN;
@@ -1325,23 +1343,30 @@ FirstFollowSet* ComputeFirstFollowSets() {
     //     }
     // }
     // parser.c
+
 void createParseTable(FirstFollowSet* F, ParseTable** T) {
-    // Allocate the ParseTable struct
+    
     *T = malloc(sizeof(ParseTable));
 
-    // Allocate 2D array of pointers
-    (*T)->rule = malloc(MAX_NON_TERMINALS * sizeof(GrammarRule**));
+    
+    (*T)->cells = malloc(MAX_NON_TERMINALS * sizeof(ParseTableCell**));
 
-    // Initialize each row
+    
     for (int i = 0; i < MAX_NON_TERMINALS; i++) {
-        (*T)->rule[i] = calloc(MAX_TERMINALS, sizeof(GrammarRule*));
+        (*T)->cells[i] = calloc(MAX_TERMINALS, sizeof(ParseTableCell*));
+        for (int t = 0; t < MAX_TERMINALS; t++) {
+            (*T)->cells[i][t] = malloc(sizeof(ParseTableCell));
+            (*T)->cells[i][t]->error = true;
+            (*T)->cells[i][t]->syn = false;
+            (*T)->cells[i][t]->rulePresent = false;
+            (*T)->cells[i][t]->rule = NULL;
     }
+}
 
-    // Populate the table
+    
     for (int i = 0; i < grammarRuleCount; i++) {
         GrammarRule* rule = &grammarRules[i];
         NonTerminal A = rule->lhs;
-        printf("Rule: %s\n", nonTerminalNames[A]);
         int can_derive_epsilon = 0;
 
         for (int j = 0; j < rule->rhsCount; j++) {
@@ -1349,22 +1374,27 @@ void createParseTable(FirstFollowSet* F, ParseTable** T) {
             
             if (symbol.isTerminal) {
                 if (symbol.tk.t != TK_EPS) {
-                    (*T)->rule[A][symbol.tk.t] = rule;  // Assign pointer
+                    ParseTableCell* cell = (*T)->cells[A][symbol.tk.t];
+                    cell->rule = rule;
+                    cell->rulePresent = true;
+                    cell->error = false;
                 }
-                //printf("eps encountered\n");
+                
                 else{
-                    can_derive_epsilon = 1;
+                    can_derive_epsilon = 1;//eps is encountered so flag is set
                 }
                 break;
             } else {
                 NonTerminal B = symbol.tk.n;
-                printf("  Checking FIRST(%s)\n", nonTerminalNames[B]);
+                
                 can_derive_epsilon = 1;
                 
                 for (int k = 0; k < F[B].firstCount; k++) {
                     tk term = F[B].firstSet[k];
                     if (term != TK_EPS) {
-                        (*T)->rule[A][term] = rule;  // Assign pointer
+                        (*T)->cells[A][term]->rule = rule;  
+                        (*T)->cells[A][term]->error = false;
+                        (*T)->cells[A][term]->rulePresent = true;
                     } else {
                         can_derive_epsilon = 1;
                     }
@@ -1377,16 +1407,38 @@ void createParseTable(FirstFollowSet* F, ParseTable** T) {
             }
         }
 
-        if (can_derive_epsilon) {
-            printf("Can derive epsilon: %s\n", nonTerminalNames[A]);
+        if (can_derive_epsilon) {//adds followset information if the rule can derive epsilon
+            
             for (int j = 0; j < F[A].followCount; j++) {
                 tk term = F[A].followSet[j];
-                (*T)->rule[A][term] = rule;  // Assign pointer
+
+                (*T)->cells[A][term]->rule = rule;  
+
+                (*T)->cells[A][term]->error = false;
+                (*T)->cells[A][term]->rulePresent = true;
             }
         }
     }
+    //adding synset information for panic recovery
+    for (int nt = 0; nt < MAX_NON_TERMINALS; nt++) {
+        //adding specific syn tokens as instructed
+        for (int j = 0; j < SYN_TOKENS; j++) {
+            if ((*T)->cells[nt][syn_tokens[j]]->error) {
+                (*T)->cells[nt][syn_tokens[j]]->syn = true;
+                }
+            }
+        //adding follow of the nonterminal
+        for(int j=0;j<F[nt].followCount;j++){
+            if((*T)->cells[nt][F[nt].followSet[j]]->error){
+                (*T)->cells[nt][F[nt].followSet[j]]->syn = true;
+            }
+        }
+
+        }
+
 }
 
+//helper function to check for EPS
 int containsEpsilon(tk* firstSet, int count) {
     for (int i = 0; i < count; i++) {
         if (firstSet[i] == TK_EPS) return 1;
@@ -1398,16 +1450,18 @@ void freeParseTable(ParseTable* T) {
     if (!T) return;
     
     for (int i = 0; i < MAX_NON_TERMINALS; i++) {
-        free(T->rule[i]);
+        for (int j = 0; j < MAX_TERMINALS; j++)
+        free(T->cells[i][j]);
+        free(T->cells[i]);
     }
-    free(T->rule);
+    free(T->cells);
     free(T);
 }
 
-// Helper function to convert a grammar rule to a string
-void getRuleString(GrammarRule* rule, char* buffer, const char** nonTerminalNames, const char** terminalNames) {
+// Helper function to convert a grammar rule to a string, used in printing parse table
+void getRuleString(GrammarRule* rule, char* buffer, const char** nonterminalNamess, const char** terminalNamess) {
     // Start with LHS
-    sprintf(buffer, "%s → ", nonTerminalNames[rule->lhs]);
+    sprintf(buffer, "%s → ", nonterminalNamess[rule->lhs]);
     
     // Handle RHS symbols
     for (int i = 0; i < rule->rhsCount; i++) {
@@ -1416,10 +1470,10 @@ void getRuleString(GrammarRule* rule, char* buffer, const char** nonTerminalName
             if (symbol.tk.t == TK_EPS) {
                 strcat(buffer, "ε");
             } else {
-                strcat(buffer, terminalNames[symbol.tk.t]);
+                strcat(buffer, terminalNamess[symbol.tk.t]);
             }
         } else {
-            strcat(buffer, nonTerminalNames[symbol.tk.n]);
+            strcat(buffer, nonterminalNamess[symbol.tk.n]);
         }
         
         // Add space between symbols
@@ -1429,36 +1483,657 @@ void getRuleString(GrammarRule* rule, char* buffer, const char** nonTerminalName
     }
 }
 
-void printParseTable(ParseTable* T, const char** nonTerminalNames, const char** terminalNames) {
-    printf("\nParse Table:\n");
-    printf("====================================================================\n");
-    
+void printParseTable(ParseTable* T, const char** nonterminalNamess, const char** terminalNamess) {
+    FILE *file = fopen("parsetablefile.txt", "w"); // Open file for writing
+
+    if (file == NULL) {
+        printf("Error opening file!\n");
+        return;
+    }
+
+    //printf("\nParse Table:\n");
+    fprintf(file, "\nParse Table:\n");
+
+    // printf("====================================================================\n");
+    fprintf(file, "====================================================================\n");
+
     for (int nt = 0; nt < MAX_NON_TERMINALS; nt++) {
-        printf("%s:\n", nonTerminalNames[nt]);
-        
+        // printf("%s:\n", nonterminalNamess[nt]);
+        fprintf(file, "%s:\n", nonterminalNamess[nt]);
+
         for (int t = 0; t < MAX_TERMINALS; t++) {
-            if (T->rule[nt][t] != NULL) {
+            if (T->cells[nt][t]->rulePresent) {
                 char ruleStr[256];
-                GrammarRule* rule = T->rule[nt][t];
-                getRuleString(rule, ruleStr, nonTerminalNames, terminalNames);
-                printf("  On %-15s: %s\n", terminalNames[t], ruleStr);
+                GrammarRule* rule = T->cells[nt][t]->rule;
+                getRuleString(rule, ruleStr, nonterminalNamess, terminalNamess);
+
+                // printf("  On %-15s: %s\n", terminalNamess[t], ruleStr);
+                fprintf(file, "  On %-15s: %s\n", terminalNamess[t], ruleStr);
+            } 
+            else {
+                if (T->cells[nt][t]->syn) {
+                    // printf("  On %-15s: Syn\n", terminalNamess[t]);
+                    fprintf(file, "  On %-15s: Syn\n", terminalNamess[t]);
+                } 
+                else {
+                    // printf("  On %-15s: Error\n", terminalNamess[t]);
+                    fprintf(file, "  On %-15s: Error\n", terminalNamess[t]);
+                }
             }
         }
-        printf("------------------------------------------------------------\n");
+
+        // printf("------------------------------------------------------------\n");
+        fprintf(file, "------------------------------------------------------------\n");
     }
+
     printf("====================================================================\n");
+    fprintf(file, "====================================================================\n");
+
+    fclose(file); // Close the file after writing
 }
+
+// Create non-terminal node
+ParseTreeNode* create_non_terminal_node(NonTerminal nt) {
+    ParseTreeNode* node = malloc(sizeof(ParseTreeNode));
+    node->symbol.isTerminal = 0;
+    node->symbol.tk.n = nt;
+    node->node.non_terminal.children = NULL;
+    node->node.non_terminal.child_count = 0;
+    return node;
+}
+
+// Create terminal node
+ParseTreeNode* create_terminal_node(tk token_type, const char* lexeme, int line) {
+    ParseTreeNode* node = malloc(sizeof(ParseTreeNode));
+    node->symbol.isTerminal = 1;
+    node->symbol.tk.t = token_type;
+    node->node.terminal.lexeme = lexeme ? strdup(lexeme) : NULL;
+    node->node.terminal.line_number = line;
+    return node;
+}
+
+// Add child to non-terminal node
+void add_child(ParseTreeNode* parent, ParseTreeNode* child) {
+    if (parent->symbol.isTerminal) {
+        //fprintf(stderr, "Error: Cannot add children to terminal node\n");
+        return;
+    }
+    
+    parent->node.non_terminal.child_count++;
+    parent->node.non_terminal.children = realloc(
+        parent->node.non_terminal.children,
+        parent->node.non_terminal.child_count * sizeof(ParseTreeNode*)
+    );
+    parent->node.non_terminal.children[parent->node.non_terminal.child_count - 1] = child;
+}
+
+// Free parse tree
+void free_parse_tree(ParseTreeNode* root) {
+    if (!root) return;
+    
+    if (!root->symbol.isTerminal) {
+        for (int i = 0; i < root->node.non_terminal.child_count; i++) {
+            free_parse_tree(root->node.non_terminal.children[i]);
+        }
+        free(root->node.non_terminal.children);
+    } else {
+        free(root->node.terminal.lexeme);
+    }
+    free(root);
+}
+
+Stack* createStack(int capacity) {
+    Stack* stack = (Stack*)malloc(sizeof(Stack));
+    stack->capacity = capacity;
+    stack->top = -1;
+    stack->items = (StackEntry*)malloc(capacity * sizeof(StackEntry));
+    return stack;
+}
+
+void push(Stack* stack, StackEntry entry) {
+    if (stack->top == stack->capacity - 1) {
+        stack->capacity *= 2;
+        stack->items = realloc(stack->items, stack->capacity * sizeof(StackEntry));
+    }
+    stack->items[++stack->top] = entry;
+}
+
+StackEntry pop(Stack* stack) {
+    if (stack->top == -1) {
+        printf("Stack empty\n");
+    }
+    return stack->items[stack->top--];
+}
+
+int isEmpty(Stack* stack) {
+    return stack->top == -1;
+}
+
+void freeStack(Stack* stack) {
+    free(stack->items);
+    free(stack);
+}
+
+// Helper function to check if a token is in the FIRST set of a non-terminal
+int isInFirstSet(FirstFollowSet* F, NonTerminal nt, tk token) {
+    for (int i = 0; i < F[nt].firstCount; i++) {
+        if (F[nt].firstSet[i] == token) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+int checkSynSetNonTerminal(tk token, FirstFollowSet* F, NonTerminal nt) {
+    for (int i =0;i<F[nt].followCount;i++){
+        if(F[nt].followSet[i]==token){
+            return 1;
+        }
+    }
+    for (int i =0;i<SYN_TOKENS;i++){
+        if(syn_tokens[i]==token){
+            return 1;
+        }
+    }
+    return 0;
+}
+
+int checkSynSetTerminal(tk token) {
+    for (int i =0;i<SYN_TOKENS;i++){
+        if(syn_tokens[i]==token){
+            return 1;
+        }
+    }
+    return 0;
+}
+
+ParseTreeNode* parseInputSourceCode(char *testcaseFile, ParseTable* T, FirstFollowSet* F) {
+   
+    lookuptbl table[28];
+    strcpy(table[0].keyw,"_main");table[0].tkid=TK_MAIN;
+    strcpy(table[1].keyw,"as");table[1].tkid=TK_AS;
+    strcpy(table[2].keyw,"call");table[2].tkid=TK_CALL;
+    strcpy(table[3].keyw,"definetype");table[3].tkid=TK_DEFINETYPE;
+    strcpy(table[4].keyw,"else");table[4].tkid=TK_ELSE;
+    strcpy(table[5].keyw,"end");table[5].tkid=TK_END;
+    strcpy(table[6].keyw,"endif");table[6].tkid=TK_ENDIF;
+    strcpy(table[7].keyw,"endrecord");table[7].tkid=TK_ENDRECORD;
+    strcpy(table[8].keyw,"endunion");table[8].tkid=TK_ENDUNION;
+    strcpy(table[9].keyw,"endwhile");table[9].tkid=TK_ENDWHILE;
+    strcpy(table[10].keyw,"global");table[10].tkid=TK_GLOBAL;
+    strcpy(table[11].keyw,"if");table[11].tkid=TK_IF;
+    strcpy(table[12].keyw,"input");table[12].tkid=TK_INPUT;
+    strcpy(table[13].keyw,"int");table[13].tkid=TK_INT;
+    strcpy(table[14].keyw,"list");table[14].tkid=TK_LIST;
+    strcpy(table[15].keyw,"output");table[15].tkid=TK_OUTPUT;
+    strcpy(table[16].keyw,"parameter");table[16].tkid=TK_PARAMETER;
+    strcpy(table[17].keyw,"parameters");table[17].tkid=TK_PARAMETERS;
+    strcpy(table[18].keyw,"read");table[18].tkid=TK_READ;
+    strcpy(table[19].keyw,"real");table[19].tkid=TK_REAL;
+    strcpy(table[20].keyw,"record");table[20].tkid=TK_RECORD;
+    strcpy(table[21].keyw,"return");table[21].tkid=TK_RETURN;
+    strcpy(table[22].keyw,"then");table[22].tkid=TK_THEN;
+    strcpy(table[23].keyw,"type");table[23].tkid=TK_TYPE;
+    strcpy(table[24].keyw,"union");table[24].tkid=TK_UNION;
+    strcpy(table[25].keyw,"while");table[25].tkid=TK_WHILE;
+    strcpy(table[26].keyw,"with");table[26].tkid=TK_WITH;
+    strcpy(table[27].keyw,"write");table[27].tkid=TK_WRITE;
+
+
+    twinBuffer* buffer;
+    buffer=(twinBuffer *)malloc(sizeof(twinBuffer));
+    buffer->lno=1;
+    buffer->index=0;
+    buffer->loadedbuf=-1;
+    FILE* codefile=fopen(testcaseFile,"r");
+    // int dollar_flag = 0;
+    tokenInfo currentToken = getNextToken(buffer,codefile,table);
+        
+    ParseTreeNode* root = NULL;
+    Stack* stack = createStack(100);
+
+    // Push the start symbol onto the stack
+    StackEntry startEntry;
+    startEntry.isTerminal = false;
+    startEntry.symbol.nt = program; // Start symbol
+    startEntry.parent = NULL;
+    push(stack, startEntry);
+
+    int errorFlag = 0;
+    int state = 0;
+    // 0 = normal
+    // 1 = normal error with terminal on top of stack
+    // 2 = normal error with non-terminal on top of stack
+    // 3 = syn error with terminal on top of stack
+    // 4 = syn error with non-terminal on top of stack
+    
+    while (!isEmpty(stack)) {
+        // printf("state = %d\n",state);
+        if(currentToken.tkid == TK_COMMENT) {
+            currentToken = getNextToken(buffer,codefile,table);
+            continue;
+        }
+        if(currentToken.err) {
+            if(currentToken.err==1) {
+                printf("Line No %-5d : Error: Unknown Symbol <%s>\n",currentToken.lno,currentToken.strlex); 
+            }
+            else if(currentToken.err==2) {
+                printf("Line no: %-5d : Error: Unknown pattern <%s>\n",currentToken.lno,currentToken.strlex); 
+            }
+            if(currentToken.err==3) {
+                if(currentToken.tkid==TK_NUM){
+                              printf("Line No %-5d : Error :Integer is longer than the maximum length of 30 digits\n",currentToken.lno);
+                             }
+                             else if(currentToken.tkid==TK_RNUM){
+                              printf("Line No %-5d : Error :Floating-point number is longer than the maximum length of 30 characters\n",currentToken.lno);
+                             }
+                             else if(currentToken.tkid==TK_ID){
+                              printf("Line No %-5d : Error :Variable is longer than the prescribed length of 20 characters\n",currentToken.lno);
+                             }
+                             else{
+                              printf("Line No %-5d : Error :Record, union, field or function identifier is longer than the maximum length of 30 characters\n",currentToken.lno);
+                             } 
+            }
+            currentToken = getNextToken(buffer,codefile,table);
+            continue;
+        }
+
+        if(state == 0){
+            StackEntry entry = pop(stack);
+            // printf("Popped %s\n", entry.isTerminal ? terminalNamess[entry.symbol.terminal] : nonterminalNamess[entry.symbol.nt]);
+            if(!entry.isTerminal){
+                NonTerminal nt = entry.symbol.nt;
+                tk tokenType = currentToken.tkid;
+                ParseTableCell* cell = T->cells[nt][tokenType];
+            if(cell->rulePresent){
+                // Valid rule: expand non-terminal and add to parse tree
+                ParseTreeNode* node = create_non_terminal_node(nt);
+                if (!entry.parent) root = node;
+                else add_child(entry.parent, node);
+                // Push RHS symbols in reverse order
+                for (int i = cell->rule->rhsCount - 1; i >= 0; i--) {
+                    Token symbol = cell->rule->rhs[i];
+                    if (symbol.isTerminal){ 
+                        if (symbol.tk.t == TK_EPS){
+                            ParseTreeNode* termNode = create_terminal_node(
+                                symbol.tk.t, NULL, currentToken.lno
+                            );
+                            add_child(node, termNode);
+                            continue;
+                        };
+                    }
+                    StackEntry newEntry;
+                    newEntry.isTerminal = symbol.isTerminal;
+                    newEntry.parent = node;
+                    if (symbol.isTerminal){ 
+                        newEntry.symbol.terminal = symbol.tk.t;
+                    }
+                    else newEntry.symbol.nt = symbol.tk.n;
+                    push(stack, newEntry);
+                    // printf("Pushed %s\n", newEntry.isTerminal ? terminalNamess[newEntry.symbol.terminal] : nonterminalNamess[newEntry.symbol.nt]);
+            }
+            // currentToken = getNextToken(buffer,codefile,table);
+            }
+            else {
+                if(!checkSynSetNonTerminal(currentToken.tkid,F,nt)){
+                    printf("Line %d Error: Invalid token %s encountered with value %s stack top %s\n",
+                        currentToken.lno, terminalNamess[currentToken.tkid], currentToken.strlex, nonterminalNamess[entry.symbol.nt]);
+                    currentToken = getNextToken(buffer,codefile,table);
+                    state = 2;
+                    }
+                    else{
+                        printf("Line %d Error: Invalid token %s encountered with value %s stack top %s\n",
+                            currentToken.lno,terminalNamess[currentToken.tkid],currentToken.strlex,nonterminalNamess[entry.symbol.nt]);
+                    state = 4;
+                    }
+                    push(stack, entry);
+            }
+            continue;
+        }
+        // if(entry.isTerminal)
+        else{
+            if(entry.symbol.terminal == currentToken.tkid){
+                //printf("Matched %s\n", terminalNamess[entry.symbol.terminal]);
+                char lexemeStr[30];
+                if (currentToken.tkid == TK_NUM) snprintf(lexemeStr, 30, "%d", currentToken.val.ival);
+                else if (currentToken.tkid == TK_RNUM) snprintf(lexemeStr, 30, "%.2f", currentToken.val.rval);
+                else strncpy(lexemeStr, currentToken.strlex, 30);
+
+                ParseTreeNode* termNode = create_terminal_node(
+                    currentToken.tkid, lexemeStr, currentToken.lno
+                );
+                add_child(entry.parent, termNode);
+                currentToken = getNextToken(buffer,codefile,table);
+            }
+            else{
+                if(!checkSynSetTerminal(currentToken.tkid)){
+                    printf("Line %d  Error: The token %s for lexeme %s  does not match with the expected token %s\n",
+                        currentToken.lno, terminalNamess[currentToken.tkid], currentToken.strlex, terminalNamess[entry.symbol.terminal]);
+                currentToken = getNextToken(buffer,codefile,table);
+                state = 1;
+                }
+                else{
+                    printf("Line %d  Error: The token %s for lexeme %s  does not match with the expected token %s\n",
+                        currentToken.lno,terminalNamess[currentToken.tkid],currentToken.strlex,terminalNamess[entry.symbol.terminal]);
+                state = 3;
+                }
+                push(stack, entry); 
+            }
+            continue; 
+        }
+        }
+        if(state == 1){
+            errorFlag = 1;
+            StackEntry entry = pop(stack);
+            // printf("Popped %s\n", entry.isTerminal ? terminalNamess[entry.symbol.terminal] : nonterminalNamess[entry.symbol.nt]);
+            // if(currentToken.tkid == entry.symbol.terminal){
+            //     // printf("Matched %s\n", terminalNamess[entry.symbol.terminal]);
+            //     char lexemeStr[30];
+            //     if (currentToken.tkid == TK_NUM) snprintf(lexemeStr, 30, "%d", currentToken.val.ival);
+            //     else if (currentToken.tkid == TK_RNUM) snprintf(lexemeStr, 30, "%.2f", currentToken.val.rval);
+            //     else strncpy(lexemeStr, currentToken.strlex, 30);
+
+            //     ParseTreeNode* termNode = create_terminal_node(
+            //         currentToken.tkid, lexemeStr, currentToken.lno
+            //     );
+            //     add_child(entry.parent, termNode);
+            //     currentToken = getNextToken(buffer,codefile,table);
+            //     state=0;
+            // }
+            if(!checkSynSetTerminal(currentToken.tkid)){
+                if (currentToken.tkid == TK_DOLLAR){
+                    if(entry.isTerminal){
+                        state=3;
+                        push(stack,entry);
+                        continue;
+                    }
+                    else{
+                        state=4;
+                        push(stack,entry);
+                        continue;
+                    }
+                }
+                currentToken = getNextToken(buffer,codefile,table);
+
+                // state = 1;
+                }
+            else state = 3;
+
+            push(stack,entry);
+            continue;
+        }
+        if(state == 2){
+            errorFlag = 1;
+            StackEntry entry = pop(stack);
+            // printf("Popped %s\n", entry.isTerminal ? terminalNamess[entry.symbol.terminal] : nonterminalNamess[entry.symbol.nt]);
+            NonTerminal nt = entry.symbol.nt;
+            tk tokenType = currentToken.tkid;
+            ParseTableCell* cell = T->cells[nt][tokenType];
+            // if(cell->rulePresent){
+            //      // Valid rule: expand non-terminal and add to parse tree
+            //      ParseTreeNode* node = create_non_terminal_node(nt);
+            //      if (!entry.parent) root = node;
+            //      else add_child(entry.parent, node);
+            //      // Push RHS symbols in reverse order
+            //      for (int i = cell->rule->rhsCount - 1; i >= 0; i--) {
+            //          Token symbol = cell->rule->rhs[i];
+            //          if (symbol.isTerminal){ 
+            //              if (symbol.tk.t == TK_EPS){
+            //                  ParseTreeNode* termNode = create_terminal_node(
+            //                      symbol.tk.t, NULL, currentToken.lno
+            //                  );
+            //                  add_child(node, termNode);
+            //                  continue;
+            //              };
+            //          }
+            //          StackEntry newEntry;
+            //          newEntry.isTerminal = symbol.isTerminal;
+            //          newEntry.parent = node;
+            //          if (symbol.isTerminal){ 
+            //              newEntry.symbol.terminal = symbol.tk.t;
+            //          }
+            //          else newEntry.symbol.nt = symbol.tk.n;
+            //          push(stack, newEntry);
+            //  }
+            // //  currentToken = getNextToken(buffer,codefile,table);
+
+            // }
+
+            if(!checkSynSetNonTerminal(currentToken.tkid,F,nt)){
+                if (currentToken.tkid == TK_DOLLAR){
+                    if(entry.isTerminal){
+                        state=3;
+                        push(stack,entry);
+                        continue;
+                    }
+                    else{
+                        state=4;
+                        push(stack,entry);
+                        continue;
+                    }
+                }
+                currentToken = getNextToken(buffer,codefile,table);
+                // state = 2;
+                }
+                else state = 4;
+            push(stack,entry);    
+        
+            continue;
+        }
+        if(state == 3){
+            errorFlag = 1;
+            StackEntry entry = pop(stack);
+            // printf("Popped %s\n", entry.isTerminal ? terminalNamess[entry.symbol.terminal] : nonterminalNamess[entry.symbol.nt]);
+            if(currentToken.tkid == entry.symbol.terminal){
+                //printf("Matched %s\n", terminalNamess[entry.symbol.terminal]);
+                char lexemeStr[30];
+                if (currentToken.tkid == TK_NUM) snprintf(lexemeStr, 30, "%d", currentToken.val.ival);
+                else if (currentToken.tkid == TK_RNUM) snprintf(lexemeStr, 30, "%.2f", currentToken.val.rval);
+                else strncpy(lexemeStr, currentToken.strlex, 30);
+
+                ParseTreeNode* termNode = create_terminal_node(
+                    currentToken.tkid, lexemeStr, currentToken.lno
+                );
+                add_child(entry.parent, termNode);
+                currentToken = getNextToken(buffer,codefile,table);
+                state=0;
+            }
+            else{
+                entry = pop(stack);
+                if(entry.isTerminal) state = 3;
+                else state = 4;
+                push(stack,entry);
+            }
+            continue;
+        }
+        if(state == 4){
+            errorFlag = 1;
+            StackEntry entry = pop(stack);
+            // printf("Popped %s\n", entry.isTerminal ? terminalNamess[entry.symbol.terminal] : nonterminalNamess[entry.symbol.nt]);
+            if(isInFirstSet(F,entry.symbol.nt,currentToken.tkid)){
+            NonTerminal nt = entry.symbol.nt;
+            tk tokenType = currentToken.tkid;
+            ParseTableCell* cell = T->cells[nt][tokenType];
+                // Valid rule: expand non-terminal and add to parse tree
+                ParseTreeNode* node = create_non_terminal_node(nt);
+                if (!entry.parent) root = node;
+                else add_child(entry.parent, node);
+                // Push RHS symbols in reverse order
+                for (int i = cell->rule->rhsCount - 1; i >= 0; i--) {
+                    Token symbol = cell->rule->rhs[i];
+                    if (symbol.isTerminal){ 
+                        if (symbol.tk.t == TK_EPS){
+                            ParseTreeNode* termNode = create_terminal_node(
+                                symbol.tk.t, NULL, currentToken.lno
+                            );
+                            add_child(node, termNode);
+                            continue;
+                        };
+                    }
+                    StackEntry newEntry;
+                    newEntry.isTerminal = symbol.isTerminal;
+                    newEntry.parent = node;
+                    if (symbol.isTerminal){ 
+                        newEntry.symbol.terminal = symbol.tk.t;
+                    }
+                    else newEntry.symbol.nt = symbol.tk.n;
+                    push(stack, newEntry);
+                }
+                // currentToken = getNextToken(buffer,codefile,table);
+                state = 0;
+            }
+            else{
+                entry = pop(stack);
+                if(entry.isTerminal) state = 3;
+                else state = 4;
+                push(stack,entry);
+            }
+            continue;
+            }
+            
+        }
+    
+    // end
+    // Final checks
+    // if (currentToken.tkid != TK_DOLLAR && !errorFlag) {
+    //     printf("Unexpected token '%s' at line %d after valid parse\n",
+    //            terminalNamess[currentToken.tkid], currentToken.lno);
+    //     errorFlag = 1;
+    // }
+
+    freeStack(stack);
+
+    if (!errorFlag) {
+        printf("Input source code is syntactically correct.\n");
+    } else {
+        free_parse_tree(root);
+        root = NULL;
+    }
+    return root;
+}
+
+//prints info of each node, helper for printing parse tree
+void printNodeInfo(ParseTreeNode* node, ParseTreeNode* parent, FILE* file) {
+    char lexeme[31] = "----";
+    int lineno = 0;
+    char tokenName[50] = "";
+    char valueIfNumber[50] = "---";
+    char currentNode[50] = "";
+    char parentSymbol[50] = "ROOT";
+    char isLeafNode[4] = "no";
+    char nodeSymbol[50] = "";
+
+
+    //filling the node info for terminals
+    if (node->symbol.isTerminal) {
+        if (node->node.terminal.lexeme != NULL) {
+            strcpy(lexeme,node->node.terminal.lexeme);
+        }
+        lineno = node->node.terminal.line_number;
+        strcpy(tokenName, terminalNamess[node->symbol.tk.t]);
+        strcpy(currentNode, terminalNamess[node->symbol.tk.t]);
+        strcpy(isLeafNode, "yes");
+        strcpy(nodeSymbol, "---");
+
+        //field only for numbers
+        if (node->symbol.tk.t == TK_NUM) {
+            int ival;
+            if (node->node.terminal.lexeme) {
+                ival = atoi(node->node.terminal.lexeme);
+            } else {
+                ival = 0;
+            }
+            sprintf(valueIfNumber, "%d", ival);
+        } else if (node->symbol.tk.t == TK_RNUM) {
+            float rval;
+            if (node->node.terminal.lexeme) {
+                rval = atof(node->node.terminal.lexeme);
+            } else {
+                rval = 0.0f;
+            }
+            sprintf(valueIfNumber, "%.2f", rval);
+        }
+    } 
+    //filling the node info for non terminals
+    else {
+        strcpy(tokenName, "---");
+        strcpy(isLeafNode, "no");
+        strcpy(nodeSymbol, nonterminalNamess[node->symbol.tk.n]);
+        strcpy(currentNode, nonterminalNamess[node->symbol.tk.n]);
+    }
+
+    // filling the parent symbol. If node is root, parent is ROOT
+    if (parent != NULL) {
+        if (parent->symbol.isTerminal) {
+            strcpy(parentSymbol, terminalNamess[parent->symbol.tk.t]);
+        } else {
+            strcpy(parentSymbol, nonterminalNamess[parent->symbol.tk.n]);
+        }
+    }
+
+    //write into file
+    fprintf(file, "%-25s %-30s %-10d %-20s %-10s %-30s %-10s %s\n",
+            lexeme, currentNode, lineno, tokenName, valueIfNumber, parentSymbol, isLeafNode, nodeSymbol);
+}
+
+
+//inorder traversal of parse tree, Helper for printing parse tree
+void inOrderTraversal(ParseTreeNode* node, FILE* file, ParseTreeNode* parent) {
+    if (node == NULL) {
+        return;
+    }
+
+    if (!node->symbol.isTerminal) {
+        int child_count = node->node.non_terminal.child_count;
+        if (child_count > 0) {
+            inOrderTraversal(node->node.non_terminal.children[0], file, node);
+        }
+
+        printNodeInfo(node, parent, file);
+
+        for (int i = 1; i < child_count; i++) {
+            inOrderTraversal(node->node.non_terminal.children[i], file, node);
+        }
+    } else {
+        printNodeInfo(node, parent, file);
+    }
+}
+
+//writes the parse tree into input file, making use of inorder traversal and printnode helper functions
+void printParseTree(ParseTreeNode* PT, char *outfile) {
+    FILE* file = fopen(outfile, "w");
+    if (file == NULL) {
+        printf("Could not open the file for writing tree\n");
+        return;
+    }
+
+    fprintf(file, "%-25s %-30s %-10s %-15s %-15s %-25s %-15s %s\n",
+            "Lexeme","CurrentNode", "LineNo", "TokenName", "ValueIfNumber", "ParentNodeSymbol", "IsLeafNode", "NodeSymbol");
+
+    //inorder traversal function prints all the node information in order.
+    inOrderTraversal(PT, file, NULL);
+
+    fclose(file);
+}
+
 
 int main() {
 
-    printf("hello testing");
+    printf("hello testing\n");
     firstFollowSets = ComputeFirstFollowSets();
-    printf("\nPrinting FIRST sets:\n");
-    printf("===================\n");
+    //printf("\nPrinting FIRST sets:\n");
+    //printf("===================\n");
    // printFirstSets();
     storeGrammarRules(); 
     //printGrammarRules();
-   createParseTable(firstFollowSets, &parseTable);
-   printParseTable(parseTable, nonTerminalNames, terminalNames); 
-    return 0;
+    createParseTable(firstFollowSets, &parseTable);
+    // printParseTable(parseTable, nonterminalNamess, terminalNamess); 
+    char* myfile="t4.txt";
+    ParseTreeNode *mytree=parseInputSourceCode(myfile,parseTable,firstFollowSets);
+    char* parse_tree="output.txt";
+    printParseTree(mytree,parse_tree);
+
+    //test=getStream(buffer,test,0);
+    //test=getStream(buffer,test,1);
+
 }
