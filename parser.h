@@ -59,7 +59,6 @@ typedef enum {
     definetypestmt,
     A
 } NonTerminal;
-
 typedef union{
     NonTerminal n;
     tk t;
@@ -147,5 +146,7 @@ int isEmpty(Stack* stack);
 StackEntry top(Stack* stack);
 void freeStack(Stack* stack);
 int isInFirstSet(FirstFollowSet* F, NonTerminal nt, tk token);
+ParseTreeNode* parseInputSourceCode(char *testcaseFile, ParseTable* T, FirstFollowSet* F);
+int checkSynSet(tk token);
 
 #endif
